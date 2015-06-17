@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Blog | Business Casual</title>
+    <title>Automating the Continuous Integration of Android Projects with Gradle using Jenkins on Windows | Business Casual</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
@@ -77,153 +77,16 @@
 </nav>
 
         <div class="container">
-
     <div class="row">
         <div class="box">
             <div class="col-lg-12">
                 <hr>
-                <h2 class="intro-text">Company <strong>blog</strong>
-</h2>
+                <h2 class="intro-text">Automating the Continuous Integration of Android Projects with Gradle using Jenkins on Windows</h2>
                 <hr>
             </div>
-            
             <div class="col-lg-12">
                 
-                <h2>Provisioning an Apache Server With Dockers And Vagrant
-                    <br>
-                    <small>September 11, 2014</small>
-                </h2>
-                <p><p>At the end of this blog we will provision a server with vagrant and run apache in a docker container.</p>
-<!-- more -->
-<p>To understand dockers, visit https://docs.docker.com/</p>
-<p>You can download the docker file &amp; vagrant file used in this blog from https://github.com/meygam/docker-apache-ubuntu.git</p>
-<h3>Docker File</h3>
-<p>To run a docker container, we need an docker image. You could either pull a publicly available images from https://registry.hub.docker.com/ or build your own. In our case we will build our own docker image from a ubuntu base image.</p>
-<p>Docker file to have apache installed in it looks like below. Will take a look what each line does.</p>
-<p>{% highlight ruby linenos %}
-FROM    ubuntu:14.04
-MAINTAINER Saravana Kumar Periyasamy <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x73;&#97;&#114;&#x61;&#x76;&#x61;&#x6e;&#x61;&#107;&#x75;&#109;&#97;&#114;&#x2e;&#112;&#x65;&#114;&#105;&#121;&#x61;&#115;&#x61;&#109;&#x79;&#x40;&#103;&#109;&#x61;&#105;&#x6c;&#x2e;&#x63;&#x6f;&#109;">&#115;&#97;&#114;&#97;&#118;&#x61;&#110;&#97;&#107;&#x75;&#109;&#97;&#x72;&#46;&#112;&#x65;&#x72;&#x69;&#x79;&#x61;&#x73;&#97;&#109;&#x79;&#64;&#x67;&#109;&#97;&#105;&#108;&#46;&#x63;&#111;&#x6d;</a></p>
-<pre><code>RUN     apt-get update
-RUN     apt-get install -y apache2
-CMD     service apache2 start &amp;&amp; tail -f    /var/log/apache2/error.log
-</code></pre>
-<p>{% endhighlight %}</p>
-<p>Line#1: takes the base image ubuntu, tag 14.04.
-Line#2: is the maintainers meta data for this new docker image.
-Line#3/4: Runs apt-get update and installs apache2.
-Line#5: Starts Apache and tails the apache logs. This will be the default command that will run when a new container is created from this docker image. Tailing the log helps to have a foreground process, and it is required if this container has to be run in background.</p>
-<h3>Vagrant File</h3>
-<p>To build docker image from this file we need a computer with docker installed. To make life easier, we will use Vagrant to build and run this container. If you are new to vagrant, go to this link get started - http://docs.vagrantup.com/v2/getting-started/index.html</p>
-<p>Here is the vagrant file to build an image from docker file, run the docker and forward the port 80 from vm to host on port 18080.</p>
-<p>{% highlight ruby linenos %}
-VAGRANTFILE<em>API</em>VERSION = "2"</p>
-<pre><code>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-config.vm.box = "hashicorp/precise64"
-
-config.vm.network "forwarded_port", guest: 80, host: 18080
-
-config.vm.provision "docker" do |d|
-  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
-  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
-end
-end
-</code></pre>
-<p>{% endhighlight %}</p>
-<p>Use <code>vagarnt up</code> to bring the vm up. It should install docker, build the docker image and use the same image to run the container.</p>
-<p>You can verify this by ssh into the vagrant box, <code>vagarnt ssh</code>, and list the docker container using <code>docker ps</code> and you should see a apache container running.</p>
-<p><img src="/assets/images/2014/Sep/docker.png" alt="Docker Screenshot" /></p>
-<p>Now you can access the apache from your host machine using http://localhost:18080</p>
-<p><img src="/assets/images/2014/Sep/apache.png" alt="Apache Screenshot" /></p>
-<h3>Manual Steps</h3>
-<p>If you prefer not to use Vagrant, install the docker on your host machine and run the below command manually.</p>
-<pre><code>docker build &lt;&lt;Dockerfile_Folder&gt;&gt; -t "speriyasamy/apache2"
-</code></pre>
-<p>And to run a contianer manually from this image, use the below command</p>
-<pre><code>docker run -d speriyasamy/apache2
-</code></pre>
-<h3>Commonly used docker commands</h3>
-<pre><code>#list images available on your host machine 
-docker images
-
-#list all the docker containers including inactive ones
-docker ps -a
-
-#pull a docker image from docker hub
-docker pull speriyasamy/docker-openfire-centos
-
-#stop container
-docker stop &lt;&lt;cotainer id&gt;&gt;
-
-#start container
-docker start &lt;&lt;cotainer id&gt;&gt;
-
-#remove container
-docker rm &lt;&lt;cotainer id&gt;&gt;
-
-#remove docker images
-docker rmi &lt;&lt;cotainer id&gt;&gt;
-</code></pre>
-</p>
-                <a href="/blog/posts/provisioning-an-apache-server-with-dockers-and-vagrant/" class="btn btn-default btn-lg">Read More</a>
-                <hr>
-            </div>
-            
-            <div class="col-lg-12">
-                
-                <h2>Connecting to Open VPN server from iOS device
-                    <br>
-                    <small>March 13, 2014</small>
-                </h2>
-                <p><p>To connect iOS device to Open VPN server we need</p>
-<ul>
-<li>Open VPN app</li>
-<li>Open VPN setting file (client.ovpn)</li>
-<li>Client Certificate</li>
-<li>CA Certificate (if its self signed)</li>
-</ul>
-<!-- more -->
-<h3>Install Open VPN app</h3>
-<p>Install Open VPN client from app store (https://itunes.apple.com/app/openvpn-connect/id590379981)</p>
-<p><img src="/assets/images/2014/Mar/20140313_174551000_iOS.jpg" alt="" /></p>
-<h3>Import Open VPN settings</h3>
-<p>Get the Open VPN settings file, clinet.ovpn, from your VPN admin. Send that file to your iOS device through email, and open it in Open VPN app on the iOS device.</p>
-<p><img src="/assets/images/2014/Mar/20140313_175334000_iOS.jpg" alt="" /></p>
-<p>Click on the green plus sign to import the profile to iOS device.</p>
-<p>{<3>}<img src="/assets/images/2014/Mar/20140313_180407000_iOS.jpg" alt="" /></p>
-<p>Once imported it should like below</p>
-<p><img src="/assets/images/2014/Mar/20140313_180416000_iOS.jpg" alt="" /></p>
-<h3>Install Client Certificate</h3>
-<p>Get the client certificate in .p12 format from your Open VPN admin. Send that also to your iOS device through email, and install it.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180433000_iOS-1.jpg" alt="" /></p>
-<pre><code>Note: You need your Client certificate with password protected. iOS doesn't allow to import certificate with blank password.
-</code></pre>
-<p><img src="/assets/images/2014/Mar/20140313_180452000_iOS.jpg" alt="" /></p>
-<p>You should see a successfully installed message</p>
-<p><img src="/assets/images/2014/Mar/20140313_180504000_iOS.jpg" alt="" /></p>
-<p>If it say "Not Trusted" as shown in my certificate above, then you will have to install the CA certificate. Else, when you try to connect Open VPN you will get the below error</p>
-<pre><code>2014-03-13 10:59:29 EVENT: CORE_ERROR PolarSSL: ca certificate is undefined [ERR]
-</code></pre>
-<h3>Install CA Certificate</h3>
-<p>Get the CA certificate from VPN admin. it should be in the form of .pem file. Send that to your iOS device through email, and install it.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180531000_iOS.jpg" alt="" /></p>
-<p>Install the root CA certificate.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180534000_iOS.jpg" alt="" /></p>
-<p>Once installed you should see that Certificate Authority is "Trusted"</p>
-<p><img src="/assets/images/2014/Mar/20140313_180547000_iOS.jpg" alt="" /></p>
-<h3>Connect to Open VPN server</h3>
-<p>Open "Open VPN" app in your iOS device, select the <code>None Selected</code> list and select your certificate.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180601000_iOS.jpg" alt="" /></p>
-<p>Now turn on the VPN button and you should get connected to Open VPN server successfully.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180641000_iOS.jpg" alt="" /></p>
-</p>
-                <a href="/blog/posts/connecting-to-open-vpn-server-from-ios-device/" class="btn btn-default btn-lg">Read More</a>
-                <hr>
-            </div>
-            
-            <div class="col-lg-12">
-                
-                <h2>Automating the Continuous Integration of Android Projects with Gradle using Jenkins on Windows
-                    <br>
+                <h2>
                     <small>March 01, 2014</small>
                 </h2>
                 <p><p>This post will show how to automate the deployment process of a Android Application using Jenkins Continuous Integration - to build the project, run the unit tests (if any), archive the built artifacts and run the Android lint reports.</p>
@@ -343,24 +206,23 @@ docker rmi &lt;&lt;cotainer id&gt;&gt;
 <p><img src="/assets/images/elizabetht/android-build-outcome.png" alt="Android Build Outcome" title="Android Build Outcome" /></p>
 <p>Thus the entire process of building the project an Android application project whenever a SCM change is triggered or under another condition, running lint reports, archiving the artifacts built, publishing lint reports and triggering emails to the recipients can be automated with a click of a button through Jenkins.</p>
 </p>
-                <a href="/blog/posts/jenkins-android/" class="btn btn-default btn-lg">Read More</a>
                 <hr>
             </div>
-            
             <div class="col-lg-12">
                 <ul class="pager">
                     
+                        <li class="previous"><a href="/blog/posts/connecting-to-open-vpn-server-from-ios-device/">&larr; Newer</a>
+                        </li>
                     
-                    <li class="next"><a href="/blog/page/2/">Older &rarr;</a>
-                    </li>
+                    
+                        <li class="next"><a href="/blog/posts/jenkins-release-upload/">Older &rarr;</a>
+                        </li>
                     
                 </ul>
             </div>
         </div>
     </div>
-
 </div>
-
         <footer>
     <div class="container">
         <div class="row">

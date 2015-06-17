@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Provisioning an Apache Server With Dockers And Vagrant | Business Casual</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/stylesheets/business-casual.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.javascripts/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+    <body>
+        
+<div class="brand">Business Casual</div>
+<div class="address-bar">3481 Melrose Place | Beverly Hills, CA 90210 | 123.456.7890</div>
+
+        <!-- Navigation -->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- navbar-brand is hidden on larger screens, but visible when the menu is collapsed -->
+            <a class="navbar-brand" href="/">Business Casual</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about.html">About</a>
+                </li>
+                
+                <li>
+                    <a href="/blog/">Blog</a>
+                </li>
+                
+                <li>
+                    <a href="/contact.html">Contact</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+        <div class="container">
+    <div class="row">
+        <div class="box">
+            <div class="col-lg-12">
+                <hr>
+                <h2 class="intro-text">Provisioning an Apache Server With Dockers And Vagrant</h2>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                
+                <h2>
+                    <small>September 11, 2014</small>
+                </h2>
+                <p><p>At the end of this blog we will provision a server with vagrant and run apache in a docker container.</p>
+<!-- more -->
+<p>To understand dockers, visit https://docs.docker.com/</p>
+<p>You can download the docker file &amp; vagrant file used in this blog from https://github.com/meygam/docker-apache-ubuntu.git</p>
+<h3>Docker File</h3>
+<p>To run a docker container, we need an docker image. You could either pull a publicly available images from https://registry.hub.docker.com/ or build your own. In our case we will build our own docker image from a ubuntu base image.</p>
+<p>Docker file to have apache installed in it looks like below. Will take a look what each line does.</p>
+<p>{% highlight ruby linenos %}
+FROM    ubuntu:14.04
+MAINTAINER Saravana Kumar Periyasamy <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#58;&#x73;&#97;&#x72;&#x61;v&#97;&#x6e;&#97;&#x6b;&#117;&#x6d;&#97;r&#x2e;&#x70;&#101;&#114;&#x69;&#121;&#97;&#115;&#97;&#x6d;&#121;&#64;g&#x6d;&#97;&#105;&#x6c;&#46;&#x63;&#x6f;m">&#x73;&#97;&#x72;&#97;&#x76;&#x61;&#x6e;&#x61;&#x6b;&#x75;&#109;&#x61;&#114;&#46;&#x70;&#x65;&#x72;&#105;&#121;&#97;&#x73;&#97;&#109;&#121;&#64;&#103;&#109;&#x61;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#109;</a></p>
+<pre><code>RUN     apt-get update
+RUN     apt-get install -y apache2
+CMD     service apache2 start &amp;&amp; tail -f    /var/log/apache2/error.log
+</code></pre>
+<p>{% endhighlight %}</p>
+<p>Line#1: takes the base image ubuntu, tag 14.04.
+Line#2: is the maintainers meta data for this new docker image.
+Line#3/4: Runs apt-get update and installs apache2.
+Line#5: Starts Apache and tails the apache logs. This will be the default command that will run when a new container is created from this docker image. Tailing the log helps to have a foreground process, and it is required if this container has to be run in background.</p>
+<h3>Vagrant File</h3>
+<p>To build docker image from this file we need a computer with docker installed. To make life easier, we will use Vagrant to build and run this container. If you are new to vagrant, go to this link get started - http://docs.vagrantup.com/v2/getting-started/index.html</p>
+<p>Here is the vagrant file to build an image from docker file, run the docker and forward the port 80 from vm to host on port 18080.</p>
+<p>{% highlight ruby linenos %}
+VAGRANTFILE<em>API</em>VERSION = "2"</p>
+<pre><code>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+config.vm.box = "hashicorp/precise64"
+
+config.vm.network "forwarded_port", guest: 80, host: 18080
+
+config.vm.provision "docker" do |d|
+  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
+  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
+end
+end
+</code></pre>
+<p>{% endhighlight %}</p>
+<p>Use <code>vagarnt up</code> to bring the vm up. It should install docker, build the docker image and use the same image to run the container.</p>
+<p>You can verify this by ssh into the vagrant box, <code>vagarnt ssh</code>, and list the docker container using <code>docker ps</code> and you should see a apache container running.</p>
+<p><img src="/assets/images/2014/Sep/docker.png" alt="Docker Screenshot" /></p>
+<p>Now you can access the apache from your host machine using http://localhost:18080</p>
+<p><img src="/assets/images/2014/Sep/apache.png" alt="Apache Screenshot" /></p>
+<h3>Manual Steps</h3>
+<p>If you prefer not to use Vagrant, install the docker on your host machine and run the below command manually.</p>
+<pre><code>docker build &lt;&lt;Dockerfile_Folder&gt;&gt; -t "speriyasamy/apache2"
+</code></pre>
+<p>And to run a contianer manually from this image, use the below command</p>
+<pre><code>docker run -d speriyasamy/apache2
+</code></pre>
+<h3>Commonly used docker commands</h3>
+<pre><code>#list images available on your host machine 
+docker images
+
+#list all the docker containers including inactive ones
+docker ps -a
+
+#pull a docker image from docker hub
+docker pull speriyasamy/docker-openfire-centos
+
+#stop container
+docker stop &lt;&lt;cotainer id&gt;&gt;
+
+#start container
+docker start &lt;&lt;cotainer id&gt;&gt;
+
+#remove container
+docker rm &lt;&lt;cotainer id&gt;&gt;
+
+#remove docker images
+docker rmi &lt;&lt;cotainer id&gt;&gt;
+</code></pre>
+</p>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                <ul class="pager">
+                    
+                    
+                        <li class="next"><a href="/blog/posts/connecting-to-open-vpn-server-from-ios-device/">Older &rarr;</a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+        <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <p>Copyright &copy; Your Website 2014</p>
+            </div>
+        </div>
+    </div>
+</footer>
+        <!-- jQuery Version 1.11.0 -->
+<script src="/javascripts/jquery-1.11.0.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/javascripts/bootstrap.min.js"></script>
+
+<!-- Script to Activate the Carousel -->
+<script>
+    $('.carousel').carousel({
+        interval: 5000 //changes the speed
+    })
+</script>
+
+    </body>
+</html>

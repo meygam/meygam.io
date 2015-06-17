@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Spring Cache abstraction using Ehcache | Business Casual</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/stylesheets/business-casual.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.javascripts/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+    <body>
+        
+<div class="brand">Business Casual</div>
+<div class="address-bar">3481 Melrose Place | Beverly Hills, CA 90210 | 123.456.7890</div>
+
+        <!-- Navigation -->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- navbar-brand is hidden on larger screens, but visible when the menu is collapsed -->
+            <a class="navbar-brand" href="/">Business Casual</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about.html">About</a>
+                </li>
+                
+                <li>
+                    <a href="/blog/">Blog</a>
+                </li>
+                
+                <li>
+                    <a href="/contact.html">Contact</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+        <div class="container">
+    <div class="row">
+        <div class="box">
+            <div class="col-lg-12">
+                <hr>
+                <h2 class="intro-text">Spring Cache abstraction using Ehcache</h2>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                
+                <h2>
+                    <small>September 10, 2013</small>
+                </h2>
+                <p><p>In this article, we will see how to use EhCahce with Spring Cache abstraction. Refer http://ehcache.org/documentation/recipes/spring-annotations for using EhCache’s own annotations. The advantage of using it with Spring Cache abstraction is that it's easy to change the underlying storage. Say in future if we want to change it to Memcached, then it is just a configuration change and not a code change.</p>
+<!-- more -->
+<p>Let’s look at the Spring configuration steps and common issues that one encounters while using Spring Cache.</p>
+<ul>
+<li>Add the Ehcache dependency to the project</li>
+</ul>
+<p>{% gist 6613368 %}</p>
+<p>Note: Without adding the dependency you might see the error</p>
+<pre><code>org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping#0': Invocation of init method failed; nested exception is java.lang.NoClassDefFoundError: Lnet/sf/ehcache/CacheManager;
+</code></pre>
+<ul>
+<li>Include the cache namespace and schema location in the Spring Configuration file.</li>
+</ul>
+<p>{% gist 6613426 %}</p>
+<ul>
+<li>Configure the application to use annotation driven</li>
+</ul>
+<p>{% gist 6613497 %}</p>
+<ul>
+<li>Define the cacheManager bean</li>
+</ul>
+<p>{% gist 6613514 %}</p>
+<ul>
+<li>Configure the ehcache.xml
+Defined the caches in the ehcache configuration XML. Below is the sample ehcache xml file to define the caches.</li>
+</ul>
+<p>{% gist 6613543 %}</p>
+<p>Note: Without defaultCache defined, below error will be thrown</p>
+<pre><code>Cannot resolve reference to bean 'cacheManager' while setting bean property 'cacheManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cacheManager' defined in ServletContext resource [/WEB-INF/servlet-config.xml]: Cannot resolve reference to bean 'ehcache' while setting bean property 'cacheManager'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'ehcache' defined in ServletContext resource [/WEB-INF/servlet-config.xml]: Invocation of init method failed; nested exception is net.sf.ehcache.CacheException: Illegal configuration. No default cache is configured.
+</code></pre>
+<ul>
+<li>Add the @Cacheable annotation to the code</li>
+</ul>
+<p>{% gist 6613568 %}</p>
+<h4>Common issues one might face in using the Spring Cache abstraction</h4>
+<ul>
+<li>Cache key collision:
+The default key generator is a simple one and it is easy to get key collisions using this. Refer the DefaultKeyGenerator.java code to see how it works. Also when you have an array as a parameter, the default key generator produces different key for each execution.</li>
+</ul>
+<p>It’s better to use your own key generator. Below is the sample one I used</p>
+<p>{% gist 6613617 %}</p>
+<p>And you can set this as your default key generator in the Spring configuration file like below.</p>
+<p>{% gist 6613634 %}</p>
+<ul>
+<li>Application context is loaded more than once:</li>
+</ul>
+<p>Sometimes due to misconfiguration the application context gets loaded twice and due to that you might get the error. Make sure you name the cacheManager in the ehcache.xml and you are not loading the application context twice.</p>
+<pre><code>Another unnamed CacheManager already exists in the same VM. 
+Please provide unique names for each CacheManager in the config or do one of following:
+1. Use one of the CacheManager.create() static factory methods to reuse same CacheManager with same name or create one if necessary
+2. Shutdown the earlier cacheManager before creating new one with same name.
+The source of the existing CacheManager is: InputStreamConfigurationSource [stream=sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream@47f3ed6]
+</code></pre>
+</p>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                <ul class="pager">
+                    
+                        <li class="previous"><a href="/blog/posts/post-4-title/">&larr; Newer</a>
+                        </li>
+                    
+                    
+                        <li class="next"><a href="/blog/posts/overview-of-microstrategy-features/">Older &rarr;</a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+        <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <p>Copyright &copy; Your Website 2014</p>
+            </div>
+        </div>
+    </div>
+</footer>
+        <!-- jQuery Version 1.11.0 -->
+<script src="/javascripts/jquery-1.11.0.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/javascripts/bootstrap.min.js"></script>
+
+<!-- Script to Activate the Carousel -->
+<script>
+    $('.carousel').carousel({
+        interval: 5000 //changes the speed
+    })
+</script>
+
+    </body>
+</html>

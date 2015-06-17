@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Post 4 title | Business Casual</title>
+    <title>Connecting to Open VPN server from iOS device | Business Casual</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
@@ -81,37 +81,66 @@
         <div class="box">
             <div class="col-lg-12">
                 <hr>
-                <h2 class="intro-text">Post 4 title</h2>
+                <h2 class="intro-text">Connecting to Open VPN server from iOS device</h2>
                 <hr>
             </div>
             <div class="col-lg-12">
                 
-                    <img class="img-responsive img-border img-full" src="/images/slide-1.jpg" alt="">
-                
                 <h2>
-                    <small>October 13, 2013</small>
+                    <small>March 13, 2014</small>
                 </h2>
-                <p><p>Lid est <strong>laborum dolo</strong> rumes fugats untras. Etharums ser quidem rerum facilis dolores nemis omnis fugats vitaes nemo
-minima rerums unsers sadips amets. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo.</p>
-<!--more-->
-<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo.</p>
+                <p><p>To connect iOS device to Open VPN server we need</p>
+<ul>
+<li>Open VPN app</li>
+<li>Open VPN setting file (client.ovpn)</li>
+<li>Client Certificate</li>
+<li>CA Certificate (if its self signed)</li>
+</ul>
+<!-- more -->
+<h3>Install Open VPN app</h3>
+<p>Install Open VPN client from app store (https://itunes.apple.com/app/openvpn-connect/id590379981)</p>
+<p><img src="/assets/images/2014/Mar/20140313_174551000_iOS.jpg" alt="" /></p>
+<h3>Import Open VPN settings</h3>
+<p>Get the Open VPN settings file, clinet.ovpn, from your VPN admin. Send that file to your iOS device through email, and open it in Open VPN app on the iOS device.</p>
+<p><img src="/assets/images/2014/Mar/20140313_175334000_iOS.jpg" alt="" /></p>
+<p>Click on the green plus sign to import the profile to iOS device.</p>
+<p>{<3>}<img src="/assets/images/2014/Mar/20140313_180407000_iOS.jpg" alt="" /></p>
+<p>Once imported it should like below</p>
+<p><img src="/assets/images/2014/Mar/20140313_180416000_iOS.jpg" alt="" /></p>
+<h3>Install Client Certificate</h3>
+<p>Get the client certificate in .p12 format from your Open VPN admin. Send that also to your iOS device through email, and install it.</p>
+<p><img src="/assets/images/2014/Mar/20140313_180433000_iOS-1.jpg" alt="" /></p>
+<pre><code>Note: You need your Client certificate with password protected. iOS doesn't allow to import certificate with blank password.
+</code></pre>
+<p><img src="/assets/images/2014/Mar/20140313_180452000_iOS.jpg" alt="" /></p>
+<p>You should see a successfully installed message</p>
+<p><img src="/assets/images/2014/Mar/20140313_180504000_iOS.jpg" alt="" /></p>
+<p>If it say "Not Trusted" as shown in my certificate above, then you will have to install the CA certificate. Else, when you try to connect Open VPN you will get the below error</p>
+<pre><code>2014-03-13 10:59:29 EVENT: CORE_ERROR PolarSSL: ca certificate is undefined [ERR]
+</code></pre>
+<h3>Install CA Certificate</h3>
+<p>Get the CA certificate from VPN admin. it should be in the form of .pem file. Send that to your iOS device through email, and install it.</p>
+<p><img src="/assets/images/2014/Mar/20140313_180531000_iOS.jpg" alt="" /></p>
+<p>Install the root CA certificate.</p>
+<p><img src="/assets/images/2014/Mar/20140313_180534000_iOS.jpg" alt="" /></p>
+<p>Once installed you should see that Certificate Authority is "Trusted"</p>
+<p><img src="/assets/images/2014/Mar/20140313_180547000_iOS.jpg" alt="" /></p>
+<h3>Connect to Open VPN server</h3>
+<p>Open "Open VPN" app in your iOS device, select the <code>None Selected</code> list and select your certificate.</p>
+<p><img src="/assets/images/2014/Mar/20140313_180601000_iOS.jpg" alt="" /></p>
+<p>Now turn on the VPN button and you should get connected to Open VPN server successfully.</p>
+<p><img src="/assets/images/2014/Mar/20140313_180641000_iOS.jpg" alt="" /></p>
 </p>
                 <hr>
             </div>
             <div class="col-lg-12">
                 <ul class="pager">
                     
-                        <li class="previous"><a href="/blog/posts/post-3-title/">&larr; Newer</a>
+                        <li class="previous"><a href="/blog/posts/provisioning-an-apache-server-with-dockers-and-vagrant/">&larr; Newer</a>
                         </li>
                     
                     
-                        <li class="next"><a href="/blog/posts/spring-cache-abstraction-using-ehcache/">Older &rarr;</a>
+                        <li class="next"><a href="/blog/posts/jenkins-android/">Older &rarr;</a>
                         </li>
                     
                 </ul>

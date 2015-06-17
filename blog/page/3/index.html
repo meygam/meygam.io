@@ -1,0 +1,3067 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Blog | Business Casual</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/stylesheets/business-casual.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.javascripts/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+    <body>
+        
+<div class="brand">Business Casual</div>
+<div class="address-bar">3481 Melrose Place | Beverly Hills, CA 90210 | 123.456.7890</div>
+
+        <!-- Navigation -->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- navbar-brand is hidden on larger screens, but visible when the menu is collapsed -->
+            <a class="navbar-brand" href="/">Business Casual</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about.html">About</a>
+                </li>
+                
+                <li>
+                    <a href="/blog/">Blog</a>
+                </li>
+                
+                <li>
+                    <a href="/contact.html">Contact</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+        <div class="container">
+
+    <div class="row">
+        <div class="box">
+            <div class="col-lg-12">
+                <hr>
+                <h2 class="intro-text">Company <strong>blog</strong>
+</h2>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows
+                    <br>
+                    <small>January 13, 2014</small>
+                </h2>
+                <p><p>This post will show how to automate the deployment process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - to build the project, run the unit tests, upload the built artifacts to a Sonatype Snapshot repository, run the Cobertura Code Coverage reports and deploy the application to the Amazon EC2. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+<!-- more -->
+<ol>
+<li><h2>Install Jenkins as a Windows Service</h2>
+<p>Navigate to jenkins-ci.org website using an Internet browser and download the Windows native package (the link is underlined for easy identification) as shown from the right side pane of the Download Jenkins tab.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-installation.png" alt="Jenkins Installation package" title="Jenkins Installation Package" /></p>
+<p>Once the download is complete, uncompress the zip file and click on the jenkins-1.xxx.msi file. Proceed through the configuration steps to install the Jenkins as a Windows service.</p>
+<ol>
+<li><h2>Modify Default Jenkins Port</h2>
+<p>By default Jenkins runs on the port 8080. In order to avoid conflict with other applications, the default port can be modified by editing the jenkins.xml found under C:\Program Files (x86)\Jenkins location. As shown below, modify the httpPort to 8082.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><service>
+</span><span class='line'>  <id>jenkins</id>
+</span><span class='line'>  <name>Jenkins</name>
+</span><span class='line'>  <description>This service runs Jenkins continuous integration system.</description>
+</span><span class='line'>  <env name="JENKINS_HOME" value="%BASE%"/>
+</span><span class='line'>  <!--
+</span><span class='line'>    if you'd like to run Jenkins with a specific version of Java, specify a full path to java.exe.
+</span><span class='line'>    The following value assumes that you have java in your PATH.
+</span><span class='line'>  -->
+</span><span class='line'>  <executable>%BASE%\jre\bin\java</executable>
+</span><span class='line'>  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8082</arguments>
+</span><span class='line'>  <!--
+</span><span class='line'>    interactive flag causes the empty black Java window to be displayed.
+</span><span class='line'>    I'm still debugging this.
+</span><span class='line'>  <interactive />
+</span><span class='line'>  -->
+</span><span class='line'>  <logmode>rotate</logmode>
+</span><span class='line'>
+</span><span class='line'>  <onfailure action="restart" />
+</span><span class='line'></service>
+</span></code></pre></td></tr></table></div></figure>
+<p>Once the modification is saved in jenkins.xml file, restart the Jenkins service from the Windows Task Manager->Services and right clicking on the Jenkins service and choose Stop Service to stop the service as shown below.</p>
+<p><img src="/assets/images/elizabetht/jenkins-stop.png" alt="Jenkins Stop Service" title="Jenkins Stop Service" /></p>
+<p>Once the status of the service changes to stopped, restart the service by right clicking on the Jenkins service and choose Start Service to start the service again.</p>
+<p><img src="/assets/images/elizabetht/jenkins-restart.png" alt="Jenkins Restart Service" title="Jenkins Restart Service" /></p>
+<p>Navigate to localhost:8082 to verify if the Jenkins restart was successful as shown below - Jenkins Dashboard will be displayed. Note that it takes a while before the Jenkins service becomes available.</p>
+<p><img src="/assets/images/elizabetht/jenkins-dashboard.png" alt="Jenkins Dashboard" title="Jenkins Dashboard" /></p>
+<ol>
+<li><h2>Install Plugins</h2>
+<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Manage Plugins as shown in the snapshot below.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-manageplugins.png" alt="Jenkins Manage Plugins" title="Jenkins Manage Plugins" /></p>
+<p>Install the following plugins and restart Jenkins for the changes to take effect.</p>
+<ul>
+<li><p>GitHub Plugin (for integrating Github with Jenkins)</p>
+</li>
+<li><p>Jenkins Cobertura Plugin (for Cobertura support)</p>
+</li>
+<li><p>Deploy to Container Plugin (for deploying the WAR to the Tomcat Container on EC2 instance)</p>
+</li>
+<li><p>Jenkins Artifactory Plugin (for deploying the built Maven artifacts to the Snapshot repository)</p>
+</li>
+<li><h2>Configure System</h2>
+<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Configure System as shown in the snapshot below.</p>
+</li>
+</ul>
+<p><img src="/assets/images/elizabetht/jenkins-configuresystem.png" alt="Jenkins Configure System" title="Jenkins Configure System" /></p>
+<p>Navigate to the JDK section and click on "Add JDK" to add the JDK installation as shown in the snapshot below. Specify a JDK Name, choose the JDK Version to install and follow the on-screen instructions to save the Oracle Login credentials. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-java.png" alt="Jenkins Java Installation" title="Jenkins Java Installation" /></p>
+<p>Next, proceed to the Git section and click on "Add Git" to add the Git installation as shown in the snapshot below. Specify Git Name, specify the path to Git executable and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-gitinstall.png" alt="Jenkins Git Installation" title="Jenkins Git Installation" /></p>
+<p>Next, proceed to the Maven section and click on "Add Maven" to add the Maven installation as shown in the snapshot below. Specify Maven Name, choose the Maven Version to install and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-maven.png" alt="Jenkins Maven Installation" title="Jenkins Maven Installation" /></p>
+<p>Proceed to the Git plugin section and enter the values for Github Username and Email Address as credentials as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-git.png" alt="Jenkins Gitplugin Credentials" title="Jenkins Gitplugin Credentials" /></p>
+<p>Proceed to the Artifactory section and click on "Add" to add the information about the artifactory servers. Specify the URL for the snapshot repository and provide the deployer credentials created from the Artifactory server website as shown below. Click on "Test Connection" to test if the connection parameters are good to save and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-artifactory.png" alt="Jenkins Artifactory Servers Configuration" title="Jenkins Artifactory Servers Configuration" /></p>
+<p>Next, proceed to the Email Notification section and enter the SMTP Server details as shown below. Click on the Advanced button to add the further details required and Save the changes. Click on "Test configuration by sending test e-mail", enter the test e-mail recipient and click on "Test configuration" to see if the email is successfully sent.</p>
+<p><img src="/assets/images/elizabetht/jenkins-email.png" alt="Jenkins Email Notification" title="Jenkins Email Notification" /></p>
+<ol>
+<li><h2>Create a New Jenkins Job</h2>
+<p>From the Jenkins Dashboard, click on "New Job" to create a new job. Enter a name for the job and choose "Build a maven2/3 project" as option and click on OK as shown below.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-newjob.png" alt="Jenkins New Job" title="Jenkins New Job" /></p>
+<p>From the New Job Configuration screen, proceed to the Source Code Management section and specify the Git Repository URL for the project as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-sourcecodemgmt.png" alt="Jenkins Source Code Management" title="Jenkins Source Code Management" /></p>
+<p>Next, from the Build Triggers section, select the options desired as shown below and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-buildtriggers.png" alt="Jenkins Build Triggers" title="Jenkins Build Triggers" /></p>
+<p>Proceed to the Build section, enter the maven goals for building a snapshot as shown below and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-build.png" alt="Jenkins Build" title="Jenkins Build" /></p>
+<p>Proceed to the Build Settings section. Select the option for Email Notification and enter the values for the email recipients as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-emailnotifications.png" alt="Jenkins Email Notifications" title="Jenkins Email Notifications" /></p>
+<p>Under the Post-build Actions, click on "Add post-build action" button and select "Deploy war/ear to a container". In the Amazon EC2, a Tomcat Manager (manager as username) instance has to be configured with roles manager-gui and manager-script to allow the remote deployment of the WAR/EAR to the Tomcat Container. The configuration steps can be found in the link <a href="https://help.ubuntu.com/13.04/serverguide/tomcat.html">https://help.ubuntu.com/13.04/serverguide/tomcat.html</a> under the section of "Tomcat administration webapps"</p>
+<p>Once the Tomcat Manager webapp configuration is complete in the Amazon EC2 instance, enter the details necessary for the deployment as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-deploy.png" alt="Jenkins Deployment" title="Jenkins Deployment" /></p>
+<p>Similarly, from the Post-build Actions, click on "Add post-build action" button and select "Publish Cobertura Coverage Report". Enter the Cobertura XML Report Pattern as shown below and save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-cobertura.png" alt="Jenkins Cobertura Coverage Report" title="Jenkins Cobertura Coverage Report" /></p>
+<ol>
+<li><h2>Configure settings.xml</h2>
+<p>In order to upload the built Maven artifacts to the artifactory server, configure the Jenkins settings.xml found in C:\Program Files (x86)\Jenkins\tools\hudson.tasks.Maven<em>MavenInstallation\Maven</em>3.1\conf folder with the same parameters as found in the default settings.xml (usually found under C:\Program Files\Apache Software Foundation\apache-maven-3.1.0\conf for a Windows machine) of the Maven installation on the system.</p>
+</li>
+</ol>
+<p>Typically, the server section needs to be configured in the settings.xml for Jenkins matching with the details of the Artifactory server.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><servers>
+</span><span class='line'>    <server>
+</span><span class='line'>      <id>sonatype-nexus-snapshots</id>
+</span><span class='line'>      <username>username</username>
+</span><span class='line'>      <password>password</password>
+</span><span class='line'>    </server>
+</span><span class='line'>    <server>
+</span><span class='line'>      <id>sonatype-nexus-staging</id>
+</span><span class='line'>      <username>username</username>
+</span><span class='line'>      <password>password</password>
+</span><span class='line'>	</server>
+</span><span class='line'></servers>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Update pom.xml</h2>
+<p>The pom.xml file for the project needs to be configured with the following plugins under the build section for the deployment to snapshot repository and for running the Cobertura Coverage report.</p>
+</li>
+<li><p>maven-compiler-plugin</p>
+</li>
+<li><p>maven-deploy-plugin</p>
+</li>
+<li><p>cobertura-maven-plugin</p>
+</li>
+</ol>
+<p>Also add parent, scm and developer section to comply with the requirements put forth by the Artifactory server management as shown below.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>    <parent>
+</span><span class='line'>		<groupId>org.sonatype.oss</groupId>
+</span><span class='line'>		<artifactId>oss-parent</artifactId>
+</span><span class='line'>		<version>7</version>
+</span><span class='line'>	</parent>
+</span><span class='line'>
+</span><span class='line'>	<scm>
+</span><span class='line'>		<connection>scm:git:git@github.com:elizabetht/StudentEnrollmentWithREST.git</connection>
+</span><span class='line'>		<developerConnection>scm:git:git@github.com:elizabetht/StudentEnrollmentWithREST.git</developerConnection>
+</span><span class='line'>		<url>git@github.com:elizabetht/StudentEnrollmentWithREST.git</url>
+</span><span class='line'>		<tag>StudentEnrollmentWithREST-1.3</tag>
+</span><span class='line'>	</scm>
+</span><span class='line'>	<developers>
+</span><span class='line'>		<developer>
+</span><span class='line'>			<id>elizabetht</id>
+</span><span class='line'>			<name>Elizabeth Thomas</name>
+</span><span class='line'>			<email>email2eliza@gmail.com</email>
+</span><span class='line'>		</developer>
+</span><span class='line'>	</developers>
+</span><span class='line'>
+</span><span class='line'>	<build>
+</span><span class='line'>		<finalName>StudentEnrollmentWithREST</finalName>
+</span><span class='line'>		<plugins>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.apache.maven.plugins</groupId>
+</span><span class='line'>				<artifactId>maven-compiler-plugin</artifactId>
+</span><span class='line'>				<version>2.5.1</version>
+</span><span class='line'>				<inherited>true</inherited>
+</span><span class='line'>				<configuration>
+</span><span class='line'>					<source>1.6</source>
+</span><span class='line'>					<target>1.6</target>
+</span><span class='line'>				</configuration>
+</span><span class='line'>			</plugin>
+</span><span class='line'>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.apache.maven.plugins</groupId>
+</span><span class='line'>				<artifactId>maven-deploy-plugin</artifactId>
+</span><span class='line'>				<version>2.8.1</version>
+</span><span class='line'>				<executions>
+</span><span class='line'>					<execution>
+</span><span class='line'>						<id>default-deploy</id>
+</span><span class='line'>						<phase>deploy</phase>
+</span><span class='line'>						<goals>
+</span><span class='line'>							<goal>deploy</goal>
+</span><span class='line'>						</goals>
+</span><span class='line'>					</execution>
+</span><span class='line'>				</executions>
+</span><span class='line'>			</plugin>					
+</span><span class='line'>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.codehaus.mojo</groupId>
+</span><span class='line'>				<artifactId>cobertura-maven-plugin</artifactId>
+</span><span class='line'>				<version>2.6</version>
+</span><span class='line'>				<configuration>
+</span><span class='line'>					<formats>
+</span><span class='line'>						<format>html</format>
+</span><span class='line'>						<format>xml</format>
+</span><span class='line'>					</formats>
+</span><span class='line'>				</configuration>
+</span><span class='line'>				<executions>
+</span><span class='line'>					<execution>
+</span><span class='line'>						<phase>package</phase>
+</span><span class='line'>						<goals>
+</span><span class='line'>							<goal>cobertura</goal>
+</span><span class='line'>						</goals>
+</span><span class='line'>					</execution>
+</span><span class='line'>				</executions>
+</span><span class='line'>			</plugin>
+</span><span class='line'>		</plugins>
+</span><span class='line'>	</build>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Build Now</h2>
+<p>Once the above configuration steps are complete, click on "Build Now" under the Jenkins -> Upload REST Snapshot Artifacts (or the respective Job name) to build the project based on the configuration.</p>
+</li>
+</ol>
+<p>The console output has the detailed logs of what steps were initiated by the configuration and the outcome of the entire build.</p>
+<p>The timestamp of the WAR deployed to Amazon EC2 instance can be checked to see if the deployment is successful. In the same way, the snapshot repository can be checked to see if the upload of the artifacts is successful.</p>
+<p>Thus the entire process of building the project along with unit tests whenever a SCM change is triggered or under another condition, running code coverage reports, uploading the artifacts built to the snapshot artifactory repository, deploying the WAR to the remote server container and triggering emails to the recipients can be automated with a click of a button through Jenkins.</p>
+</p>
+                <a href="/blog/posts/jenkins-snapshot-upload/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Building Jersey2 REST Client Using Spring with JUnit and JMock
+                    <br>
+                    <small>December 23, 2013</small>
+                </h2>
+                <p><p>This post will show how to create a Jersey2 REST Client in a Spring environment and test the same using JUnit and JMock frameworks. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+<!-- more -->
+<ol>
+<li><h2>Update pom.xml</h2>
+<p>To make the Maven Java Web Application project (<a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>) support the JUnit testing framework, add the following dependency to the existing pom.xml</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><dependency>
+</span><span class='line'>	<groupId>org.jmock</groupId>
+</span><span class='line'>	<artifactId>jmock-junit4</artifactId>
+</span><span class='line'>	<version>2.6.0</version>
+</span><span class='line'></dependency>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create packages for Client tier classes</h2>
+<p>Create package for the Jersey Client classes under the src/main/java folder.</p>
+</li>
+</ol>
+<p>A sample snapshot of the project after the package creation is as shown below:</p>
+<p><img src="/assets/images/elizabetht/jersey-client-package.png" alt="Jersey REST Client Package Layout" title="Jersey REST Client Package Layout" /></p>
+<ol>
+<li><h2>Create classes for Client tier</h2>
+<p>Create an interface class named StudentClientInterface.java inside the package com.github.elizabetht.client to support the client operations.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public interface StudentClientInterface {
+</span><span class='line'>
+</span><span class='line'>	public Response getSignup();
+</span><span class='line'>
+</span><span class='line'>	public Response postSignup(String userName, String password,
+</span><span class='line'>			String firstName, String lastName, String dateOfBirth,
+</span><span class='line'>			String emailAddress) throws Exception;
+</span><span class='line'>
+</span><span class='line'>	public Response getLogin();
+</span><span class='line'>
+</span><span class='line'>	public Response postLogin(String userName, String password);
+</span><span class='line'>
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<p>Create a client tier implementation class (a POJO indeed) named StudentClient.java inside the package com.github.elizabetht.client. This is where the client logic goes - either to access the GET/POST methods in the StudentResource.java class.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public class StudentClient implements StudentClientInterface {
+</span><span class='line'>	private WebTarget target;
+</span><span class='line'>
+</span><span class='line'>	public StudentClient(WebTarget target) {
+</span><span class='line'>		this.target = target;
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public Response getSignup() {		
+</span><span class='line'>		Response response = target.path("signup").request().get(Response.class);
+</span><span class='line'>		return response;
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public Response postSignup(String userName, String password,
+</span><span class='line'>			String firstName, String lastName, String dateOfBirth,
+</span><span class='line'>			String emailAddress) throws Exception {
+</span><span class='line'>		
+</span><span class='line'>		Form form = new Form().param("userName", userName)
+</span><span class='line'>				.param("password", password).param("firstName", firstName)
+</span><span class='line'>				.param("lastName", lastName).param("dateOfBirth", dateOfBirth)
+</span><span class='line'>				.param("emailAddress", emailAddress);
+</span><span class='line'>		Response response = target.path("signup").request()
+</span><span class='line'>				.post(Entity.form(form));
+</span><span class='line'>
+</span><span class='line'>		if (response.getStatus() == Status.INTERNAL_SERVER_ERROR
+</span><span class='line'>				.getStatusCode()) {
+</span><span class='line'>			throw new Exception();
+</span><span class='line'>		}
+</span><span class='line'>
+</span><span class='line'>		if (response.getStatus() != Status.OK.getStatusCode()) {
+</span><span class='line'>			throw new RuntimeException();
+</span><span class='line'>		}
+</span><span class='line'>
+</span><span class='line'>		return response;
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public Response getLogin() {
+</span><span class='line'>		Response response = target.path("login").request().get(Response.class);
+</span><span class='line'>
+</span><span class='line'>		return response;
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public Response postLogin(String userName, String password) {
+</span><span class='line'>		Form form = new Form().param("userName", userName).param("password",
+</span><span class='line'>				password);
+</span><span class='line'>
+</span><span class='line'>		Response response = target.path("login").request()
+</span><span class='line'>				.post(Entity.form(form));
+</span><span class='line'>
+</span><span class='line'>		if (response.getStatus() != Status.OK.getStatusCode()) {
+</span><span class='line'>			throw new RuntimeException();
+</span><span class='line'>		}
+</span><span class='line'>
+</span><span class='line'>		return response;
+</span><span class='line'>	}
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create packages for Client Test tier classes</h2>
+<p>Create package for the Client Test classes by right-clicking on the StudentClient.java class and choosing "New->JUnit Test Case" option. Specify the source folder as StudentEnrollmentWithREST/src/test/java folder (create the src/test/java folder if the folder does not exist) and specify the name for the test class.</p>
+</li>
+</ol>
+<p>A sample snapshot of the project after the package creation is as shown below:</p>
+<p><img src="/assets/images/elizabetht/jersey-client-test-package.png" alt="Jersey REST Client Test Package Layout" title="Jersey REST Client Test Package Layout" /></p>
+<ol>
+<li><h2>Extract Interfaces for Model and Resource tier classes</h2>
+<p>In order to support the use of JMock mocking framework alongside JUnit test cases, extract the interfaces out of the Model(Student.java) and Resource (StudentResource.java) tier classes. This is necessary in order to mock the objects.</p>
+</li>
+</ol>
+<p>Extracting interfaces can be done by right-clicking on the class file and choosing "Refactor->Extract Interface" option.</p>
+<p>The StudentInterface.java (in src/main/java/com.github.elizabetht.model package) after the extraction looks as below.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public interface StudentInterface {
+</span><span class='line'>
+</span><span class='line'>	public Long getId();
+</span><span class='line'>
+</span><span class='line'>	public void setId(Long id);
+</span><span class='line'>
+</span><span class='line'>	public String getUserName();
+</span><span class='line'>
+</span><span class='line'>	public void setUserName(String userName);
+</span><span class='line'>
+</span><span class='line'>	public String getFirstName();
+</span><span class='line'>
+</span><span class='line'>	public void setFirstName(String firstName);
+</span><span class='line'>
+</span><span class='line'>	public String getLastName();
+</span><span class='line'>
+</span><span class='line'>	public void setLastName(String lastName);
+</span><span class='line'>
+</span><span class='line'>	public String getPassword();
+</span><span class='line'>
+</span><span class='line'>	public void setPassword(String password);
+</span><span class='line'>
+</span><span class='line'>	public String getEmailAddress();
+</span><span class='line'>
+</span><span class='line'>	public void setEmailAddress(String emailAddress);
+</span><span class='line'>
+</span><span class='line'>	public Date getDateOfBirth();
+</span><span class='line'>
+</span><span class='line'>	public void setDateOfBirth(Date dateOfBirth);
+</span><span class='line'>
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<p>Similarly, the StudentResourceInterface.java (in src/main/java/com.github.elizabetht.resource package) looks as below.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public interface StudentResourceInterface {
+</span><span class='line'>
+</span><span class='line'>	public Response signup();
+</span><span class='line'>
+</span><span class='line'>	public Response signup(String userName, String password, String firstName,
+</span><span class='line'>			String lastName, String dateOfBirth, String emailAddress)
+</span><span class='line'>			throws ParseException;
+</span><span class='line'>
+</span><span class='line'>	public Response login();
+</span><span class='line'>
+</span><span class='line'>	public Response login(String userName, String password);
+</span><span class='line'>
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create Unit Test cases for StudentClient class</h2>
+<p>As a part of unit testing, each of the unit must be testable individually. While in reality, each unit would depend on other modules. This is where JMock comes into picture - to help to test a unit individually by mocking the dependencies.</p>
+</li>
+</ol>
+<p>@Before annotation helps to define the environment that needs to be setup before running each test case. In this example, the context and mock objects are setup using the @Before annotation.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+<span class='line-number'>237</span>
+<span class='line-number'>238</span>
+<span class='line-number'>239</span>
+<span class='line-number'>240</span>
+<span class='line-number'>241</span>
+<span class='line-number'>242</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public class StudentClientUnitTest {
+</span><span class='line'>	private Mockery context;
+</span><span class='line'>	private StudentClient studentClient;
+</span><span class='line'>	private WebTarget target;
+</span><span class='line'>	private Builder builder;
+</span><span class='line'>
+</span><span class='line'>	@Before
+</span><span class='line'>	public void beforeEachTest() {
+</span><span class='line'>		context = new Mockery();
+</span><span class='line'>		studentClient = new StudentClient(
+</span><span class='line'>				ClientBuilder
+</span><span class='line'>						.newClient()
+</span><span class='line'>						.target("http://localhost:8080/StudentEnrollmentWithREST/webapi/studentResource/"));
+</span><span class='line'>		target = context.mock(WebTarget.class);
+</span><span class='line'>		builder = context.mock(Builder.class);
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void getSignupTest() {
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.ok(new Viewable("/signup")).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).get(Response.class);
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.getSignup();
+</span><span class='line'>		assertEquals(response.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postSignupTest() throws Exception {
+</span><span class='line'>		String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		String firstName = "jersey";
+</span><span class='line'>		String lastName = "jersey";
+</span><span class='line'>		String dateOfBirth = "12-21-2013";
+</span><span class='line'>		String emailAddress = "jersey@gmail.com";
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.ok(new Viewable("/success")).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postSignup(userName, password, firstName, lastName,
+</span><span class='line'>				dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test(expected = Exception.class)
+</span><span class='line'>	public void postSignupInvalidDateFormatTest() throws Exception {
+</span><span class='line'>		String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		String firstName = "jersey";
+</span><span class='line'>		String lastName = "jersey";
+</span><span class='line'>		String dateOfBirth = "12/21/2013";
+</span><span class='line'>		String emailAddress = "jersey@gmail.com";
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.status(Status.PRECONDITION_FAILED)
+</span><span class='line'>				.build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postSignup(userName, password, firstName, lastName,
+</span><span class='line'>				dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test(expected = Exception.class)
+</span><span class='line'>	public void postSignupBadRequestTest() throws Exception {
+</span><span class='line'>		String userName = null;
+</span><span class='line'>		String password = null;
+</span><span class='line'>		String firstName = null;
+</span><span class='line'>		String lastName = null;
+</span><span class='line'>		String dateOfBirth = null;
+</span><span class='line'>		String emailAddress = null;
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.status(Status.PRECONDITION_FAILED)
+</span><span class='line'>				.build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postSignup(userName, password, firstName, lastName,
+</span><span class='line'>				dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test(expected = RuntimeException.class)
+</span><span class='line'>	public void postSignupExistingUserTest() throws Exception {
+</span><span class='line'>		String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		String firstName = "jersey";
+</span><span class='line'>		String lastName = "jersey";
+</span><span class='line'>		String dateOfBirth = "12/21/2013";
+</span><span class='line'>		String emailAddress = "jersey@gmail.com";
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.status(Status.BAD_REQUEST).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postSignup(userName, password, firstName, lastName,
+</span><span class='line'>				dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.BAD_REQUEST.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void getLoginTest() {
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.ok(new Viewable("/login")).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).get(Response.class);
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.getLogin();
+</span><span class='line'>		assertEquals(response.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postLoginTest() {
+</span><span class='line'>		String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.ok(new Viewable("/success")).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postLogin(userName, password);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>	
+</span><span class='line'>	@Test(expected=RuntimeException.class)
+</span><span class='line'>	public void postLoginInvalidTest() {
+</span><span class='line'>		String userName = "jersey";
+</span><span class='line'>		String password = "jersey123";
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.status(Status.BAD_REQUEST).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postLogin(userName, password);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.BAD_REQUEST.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>	
+</span><span class='line'>	@Test(expected=RuntimeException.class)
+</span><span class='line'>	public void postLoginBadRequestTest() {
+</span><span class='line'>		String userName = null;
+</span><span class='line'>		String password = null;
+</span><span class='line'>		studentClient = new StudentClient(target);
+</span><span class='line'>
+</span><span class='line'>		final Response response = Response.status(Status.PRECONDITION_FAILED).build();
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(target).path(with(any(String.class)));
+</span><span class='line'>				will(returnValue(target));
+</span><span class='line'>				oneOf(target).request();
+</span><span class='line'>				will(returnValue(builder));
+</span><span class='line'>				oneOf(builder).post(with(any(Entity.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentClient.postLogin(userName, password);
+</span><span class='line'>		assertEquals(response.getStatus(), Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create Unit Test cases for StudentResource class</h2>
+<p>In similar lines, create unit test cases for StudentResource class by mocking the external dependencies which the class depends on for its operation.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+<span class='line-number'>237</span>
+<span class='line-number'>238</span>
+<span class='line-number'>239</span>
+<span class='line-number'>240</span>
+<span class='line-number'>241</span>
+<span class='line-number'>242</span>
+<span class='line-number'>243</span>
+<span class='line-number'>244</span>
+<span class='line-number'>245</span>
+<span class='line-number'>246</span>
+<span class='line-number'>247</span>
+<span class='line-number'>248</span>
+<span class='line-number'>249</span>
+<span class='line-number'>250</span>
+<span class='line-number'>251</span>
+<span class='line-number'>252</span>
+<span class='line-number'>253</span>
+<span class='line-number'>254</span>
+<span class='line-number'>255</span>
+<span class='line-number'>256</span>
+<span class='line-number'>257</span>
+<span class='line-number'>258</span>
+<span class='line-number'>259</span>
+<span class='line-number'>260</span>
+<span class='line-number'>261</span>
+<span class='line-number'>262</span>
+<span class='line-number'>263</span>
+<span class='line-number'>264</span>
+<span class='line-number'>265</span>
+<span class='line-number'>266</span>
+<span class='line-number'>267</span>
+<span class='line-number'>268</span>
+<span class='line-number'>269</span>
+<span class='line-number'>270</span>
+<span class='line-number'>271</span>
+<span class='line-number'>272</span>
+<span class='line-number'>273</span>
+<span class='line-number'>274</span>
+<span class='line-number'>275</span>
+<span class='line-number'>276</span>
+<span class='line-number'>277</span>
+<span class='line-number'>278</span>
+<span class='line-number'>279</span>
+<span class='line-number'>280</span>
+<span class='line-number'>281</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public class StudentResourceUnitTest {
+</span><span class='line'>	private Mockery context;
+</span><span class='line'>	private StudentService studentService;
+</span><span class='line'>	private StudentResourceInterface studentResourceInterface;
+</span><span class='line'>
+</span><span class='line'>	@Before
+</span><span class='line'>	public void beforeEachTest() throws Exception {
+</span><span class='line'>		context = new Mockery();
+</span><span class='line'>		studentService = context.mock(StudentService.class);
+</span><span class='line'>		studentResourceInterface = new StudentResource();
+</span><span class='line'>
+</span><span class='line'>		Field field = studentResourceInterface.getClass().getDeclaredField(
+</span><span class='line'>				"studentService");
+</span><span class='line'>		field.setAccessible(true);
+</span><span class='line'>		field.set(studentResourceInterface, studentService);
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postSignupResourceTest() throws ParseException {
+</span><span class='line'>		final String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		String firstName = "jersey";
+</span><span class='line'>		String lastName = "jersey";
+</span><span class='line'>		String dateOfBirth = "12/21/2013";
+</span><span class='line'>		String emailAddress = "jersey@gmail.com";
+</span><span class='line'>		final StudentInterface student = context.mock(StudentInterface.class);
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByUserName(userName);
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>				oneOf(studentService).save(with(any(StudentInterface.class)));
+</span><span class='line'>				will(returnValue(student));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postSignupResourceForExistingUserTest() throws ParseException {
+</span><span class='line'>		final String userName = "jersey";
+</span><span class='line'>		String password = "jersey";
+</span><span class='line'>		String firstName = "jersey";
+</span><span class='line'>		String lastName = "jersey";
+</span><span class='line'>		String dateOfBirth = "12/21/2013";
+</span><span class='line'>		String emailAddress = "jersey@gmail.com";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByUserName(userName);
+</span><span class='line'>				will(returnValue(true));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postSignupResourceForBadRequestTest() throws ParseException {
+</span><span class='line'>		String userName = null;
+</span><span class='line'>		String password = null;
+</span><span class='line'>		String firstName = null;
+</span><span class='line'>		String lastName = null;
+</span><span class='line'>		String dateOfBirth = null;
+</span><span class='line'>		String emailAddress = null;
+</span><span class='line'>		final StudentResourceInterface studentResourceInterface = context
+</span><span class='line'>				.mock(StudentResourceInterface.class);
+</span><span class='line'>		final Response response = Response.status(Status.PRECONDITION_FAILED)
+</span><span class='line'>				.build();
+</span><span class='line'>		final Response response1 = Response.ok().entity(new Viewable("/login"))
+</span><span class='line'>				.build();
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		userName = "jersey";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		password = "jersey";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		firstName = "jersey";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>
+</span><span class='line'>		lastName = "jersey";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		dateOfBirth = "12/20/2013";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface)
+</span><span class='line'>						.signup(with(aNonNull(String.class)),
+</span><span class='line'>								with(aNonNull(String.class)),
+</span><span class='line'>								with(aNonNull(String.class)),
+</span><span class='line'>								with(aNonNull(String.class)),
+</span><span class='line'>								with(aNonNull(String.class)),
+</span><span class='line'>								with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		emailAddress = "jersey@gmail.com";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).signup(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)));
+</span><span class='line'>				will(returnValue(response1));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.signup(userName, password, firstName,
+</span><span class='line'>				lastName, dateOfBirth, emailAddress);
+</span><span class='line'>		assertEquals(response1.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postLoginResourceTest() throws ParseException {
+</span><span class='line'>		final String userName = "jersey";
+</span><span class='line'>		final String password = "jersey";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(userName, password);
+</span><span class='line'>				will(returnValue(true));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName, password);
+</span><span class='line'>
+</span><span class='line'>		final String password1 = "jersey123";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(userName, password1);
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName, password1);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void postLoginResourceForBadRequestTest() throws ParseException {
+</span><span class='line'>		final String userName = null;
+</span><span class='line'>		final String password = null;
+</span><span class='line'>		final StudentResourceInterface studentResourceInterface = context
+</span><span class='line'>				.mock(StudentResourceInterface.class);
+</span><span class='line'>		final Response response = Response.status(Status.PRECONDITION_FAILED)
+</span><span class='line'>				.build();
+</span><span class='line'>		final Response response1 = Response.ok().entity(new Viewable("/login"))
+</span><span class='line'>				.build();
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).login(
+</span><span class='line'>						with(aNull(String.class)), with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName, password);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		final String userName1 = "jersey";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface)
+</span><span class='line'>						.login(with(aNonNull(String.class)),
+</span><span class='line'>								with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName1, password);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		final String password1 = "jersey";
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface)
+</span><span class='line'>						.login(with(aNull(String.class)),
+</span><span class='line'>								with(aNonNull(String.class)));
+</span><span class='line'>				will(returnValue(response));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName, password1);
+</span><span class='line'>		assertEquals(response.getStatus(),
+</span><span class='line'>				Status.PRECONDITION_FAILED.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentResourceInterface).login(
+</span><span class='line'>						with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)));
+</span><span class='line'>				will(returnValue(response1));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentResourceInterface.login(userName1, password1);
+</span><span class='line'>		assertEquals(response1.getStatus(), Status.OK.getStatusCode());
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create Unit Test cases for StudentService class</h2>
+<p>Create unit test cases for StudentService class by mocking the external dependencies which the class depends on for its operation.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public class StudentServiceUnitTest {
+</span><span class='line'>	private Mockery context;
+</span><span class='line'>	private StudentRepository studentRepository;
+</span><span class='line'>	private StudentService studentService;
+</span><span class='line'>
+</span><span class='line'>	@Before
+</span><span class='line'>	public void beforeEachTest() throws Exception {
+</span><span class='line'>		context = new Mockery();
+</span><span class='line'>		studentRepository = context.mock(StudentRepository.class);
+</span><span class='line'>		studentService = new StudentServiceImpl();
+</span><span class='line'>
+</span><span class='line'>		Field field = studentService.getClass().getDeclaredField(
+</span><span class='line'>				"studentRepository");
+</span><span class='line'>		field.setAccessible(true);
+</span><span class='line'>		field.set(studentService, studentRepository);
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void findByLoginTest() {
+</span><span class='line'>		final String userName = "j2eee";
+</span><span class='line'>		final String password = "j2ee";
+</span><span class='line'>		final StudentInterface studentInterface = null;
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository).findByUserName(userName);
+</span><span class='line'>				will(returnValue(studentInterface));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName, password);
+</span><span class='line'>		assertNull(studentInterface);
+</span><span class='line'>
+</span><span class='line'>		final String userName1 = "j2ee";
+</span><span class='line'>		final StudentInterface studentInterface1 = context
+</span><span class='line'>				.mock(StudentInterface.class);
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository).findByUserName(userName1);
+</span><span class='line'>				will(returnValue(studentInterface1));
+</span><span class='line'>				oneOf(studentInterface1).getPassword();
+</span><span class='line'>				will(returnValue(password));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName1, password);
+</span><span class='line'>		assertNotNull(studentInterface1);
+</span><span class='line'>		assertEquals("j2ee", password);
+</span><span class='line'>
+</span><span class='line'>		final String password1 = "j2eee";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository).findByUserName(userName1);
+</span><span class='line'>				will(returnValue(studentInterface1));
+</span><span class='line'>				oneOf(studentInterface1).getPassword();
+</span><span class='line'>				will(returnValue(password1));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName1, password1);
+</span><span class='line'>		assertNotNull(studentInterface1);
+</span><span class='line'>		assertNotEquals("j2ee", password1);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void findByLoginWithNullParametersTest() {
+</span><span class='line'>		final String userName = null;
+</span><span class='line'>		final String password = null;
+</span><span class='line'>		studentService = context.mock(StudentService.class);
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(with(aNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName, password);
+</span><span class='line'>
+</span><span class='line'>		final String userName1 = "j2ee";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(with(aNonNull(String.class)),
+</span><span class='line'>						with(aNull(String.class)));
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName1, password);
+</span><span class='line'>
+</span><span class='line'>		final String password1 = "j2eee";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(with(aNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)));
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName, password1);
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentService).findByLogin(with(aNonNull(String.class)),
+</span><span class='line'>						with(aNonNull(String.class)));
+</span><span class='line'>				will(returnValue(false));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName1, password1);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void findByEmptyLoginTest() {
+</span><span class='line'>		final String userName = "";
+</span><span class='line'>		final String password = "";
+</span><span class='line'>		final StudentInterface studentInterface = null;
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository).findByUserName(userName);
+</span><span class='line'>				will(returnValue(studentInterface));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByLogin(userName, password);
+</span><span class='line'>		assertNull(studentInterface);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void findByUserNameTest() {
+</span><span class='line'>		final String userName = "j2ee";
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository)
+</span><span class='line'>						.findByUserName(with(any(String.class)));
+</span><span class='line'>				will(returnValue(with(any(StudentInterface.class))));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByUserName(userName);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@Test
+</span><span class='line'>	public void findByBadUserNameTest() {
+</span><span class='line'>		final String userName = "j2eee";
+</span><span class='line'>		final StudentInterface studentInterface = null;
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository)
+</span><span class='line'>						.findByUserName(with(any(String.class)));
+</span><span class='line'>				will(returnValue(studentInterface));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByUserName(userName);
+</span><span class='line'>		assertNull(studentInterface);
+</span><span class='line'>
+</span><span class='line'>		final String userName1 = "j2ee";
+</span><span class='line'>		final StudentInterface studentInterface1 = context
+</span><span class='line'>				.mock(StudentInterface.class);
+</span><span class='line'>
+</span><span class='line'>		context.checking(new Expectations() {
+</span><span class='line'>			{
+</span><span class='line'>				oneOf(studentRepository).findByUserName(userName1);
+</span><span class='line'>				will(returnValue(studentInterface1));
+</span><span class='line'>			}
+</span><span class='line'>		});
+</span><span class='line'>		studentService.findByUserName(userName1);
+</span><span class='line'>		assertNotNull(studentInterface1);
+</span><span class='line'>
+</span><span class='line'>		context.assertIsSatisfied();
+</span><span class='line'>	}
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Running Test cases</h2>
+<p>Any of the test case or test class can be run by right clicking on the name of the test case or test class and choosing "Run As->JUnit test case". Each of the test case developed should be tested to give a success output (indicated by the green bar in the JUnit output)</p>
+</li>
+<li><h2>Code Coverage</h2>
+<p>Using tools like EclEmma, code coverage for the project can be measured. To install EclEmma, choose "Help->Eclipse Marketplace" and search for EclEmma in the search toolbar. Install the tool using the steps on-screen.</p>
+</li>
+</ol>
+<p>Once the tool is installed, the code coverage for the project can be measured by choosing "Coverage As->JUnit test case" from the right click options on the project.</p>
+<p>Achieving a code coverage of about or above 80% is normally preferred according to industrial standards. Not only writing unit test cases for existing code, but developing test scenarios for which code is not in place is an important step in Test Driven Development (TDD). By iteratively following the TDD approach, the stability of the code could be significantly improved.</p>
+<ol>
+<li><h2>Clone or Download code</h2>
+<p>If using git, clone a copy of this project here: <a href="https://github.com/elizabetht/StudentEnrollmentWithREST.git">https://github.com/elizabetht/StudentEnrollmentWithREST.git</a></p>
+</li>
+</ol>
+<p>In case of not using git, download the project as ZIP or tar.gz file here: <a href="https://github.com/elizabetht/StudentEnrollmentWithREST/releases/tag/1.2">https://github.com/elizabetht/StudentEnrollmentWithREST/releases/tag/1.2</a></p>
+</p>
+                <a href="/blog/posts/jersey2-rest-client-with-junit-and-jmock/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Building Java Web Application Using Jersey2 REST with Spring
+                    <br>
+                    <small>December 13, 2013</small>
+                </h2>
+                <p><p>This post will show how to create a Student Enrollment Application using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment. This is a simple application that aims to collect the input details from the user during signup, save the details in the MYSQL DB and authenticate the same during login.</p>
+<!-- more -->
+<ol>
+<li><h2>Create Java Web Application Project using Maven Template</h2>
+<p>To begin with, from the command line, create a Java Maven project with the template of jersey-quickstart-webapp by providing appropriate values for GroupId, Artifact Id, Version and Package for the project.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>mvn archetype:generate -DarchetypeGroupId=org.glassfish.jersey.archetypes -DarchetypeArtifactId=jersey-quickstart-webapp -DarchetypeVersion=2.4.1
+</span></code></pre></td></tr></table></div></figure>
+<p>Import the project into the IDE using File->Import->Existing Maven Projects, select Root Directory where the Project is created (ideally the name of the Project or ArtifactId) and click on Finish. The sample web application directory structure is shown below with a standard deployment descriptor web.xml and Maven pom.xml</p>
+<p><img src="/assets/images/elizabetht/jersey-layout.png" alt="Jersey REST Spring Maven Project Layout" title="Jersey REST Spring Maven Project Layout" /></p>
+<ol>
+<li><h2>Update pom.xml</h2>
+<p>To make the above Maven Java Web Application project support the Hibernate ORM and Jersey Container in Spring framework, add the following dependencies to the existing pom.xml</p>
+</li>
+<li><p>jstl and servlet-api (for Javax Servlet Support)</p>
+</li>
+<li><p>jersey-container-servlet, jersey-media-moxy, jersey-spring3, jersey-server and jersey-mvc-jsp (for Jersey Support)</p>
+</li>
+<li><p>spring-core, spring-context, spring-web and spring-webmvc(for Spring Support)</p>
+</li>
+<li><p>junit (for JUnit Support)</p>
+</li>
+<li><p>commons-lang3 (for standard Java library support)</p>
+</li>
+<li><p>mysql-connector-java (for MYSQL support)</p>
+</li>
+<li><p>spring-jdbc (for data access with JDBC Spring)</p>
+</li>
+<li><p>spring-orm (for ORM data access with Spring)</p>
+</li>
+<li><p>spring-data-jpa (for JPA support)</p>
+</li>
+<li><p>hibernate-validator and hibernate-entitymanager (for Hibernate Support)</p>
+</li>
+<li><p>jta (for transaction support)</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>	<dependencies>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>javax.servlet</groupId>
+</span><span class='line'>			<artifactId>servlet-api</artifactId>
+</span><span class='line'>			<version>2.5</version>
+</span><span class='line'>			<scope>provided</scope>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>javax.servlet</groupId>
+</span><span class='line'>			<artifactId>jstl</artifactId>
+</span><span class='line'>			<version>1.2</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.glassfish.jersey.containers</groupId>
+</span><span class='line'>			<!-- <artifactId>jersey-container-servlet-core</artifactId> -->
+</span><span class='line'>			<!-- use the above artifactId if you need servlet 2.x compatibility -->
+</span><span class='line'>			<artifactId>jersey-container-servlet</artifactId>
+</span><span class='line'>			<version>${jersey.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<!-- uncomment this to get JSON support -->
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.glassfish.jersey.media</groupId>
+</span><span class='line'>			<artifactId>jersey-media-moxy</artifactId>
+</span><span class='line'>			<version>${jersey.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.glassfish.jersey.ext</groupId>
+</span><span class='line'>			<artifactId>jersey-spring3</artifactId>
+</span><span class='line'>			<version>${jersey.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.glassfish.jersey.core</groupId>
+</span><span class='line'>			<artifactId>jersey-server</artifactId>
+</span><span class='line'>			<version>${jersey.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>    		<groupId>org.glassfish.jersey.ext</groupId>
+</span><span class='line'>    		<artifactId>jersey-mvc-jsp</artifactId>
+</span><span class='line'>    		<version>${jersey.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-core</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-context</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-web</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-webmvc</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-jdbc</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework</groupId>
+</span><span class='line'>			<artifactId>spring-orm</artifactId>
+</span><span class='line'>			<version>${spring.version}</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>junit</groupId>
+</span><span class='line'>			<artifactId>junit</artifactId>
+</span><span class='line'>			<version>4.11</version>
+</span><span class='line'>			<scope>test</scope>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.apache.commons</groupId>
+</span><span class='line'>			<artifactId>commons-lang3</artifactId>
+</span><span class='line'>			<version>3.1</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>mysql</groupId>
+</span><span class='line'>			<artifactId>mysql-connector-java</artifactId>
+</span><span class='line'>			<version>5.1.21</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.hibernate</groupId>
+</span><span class='line'>			<artifactId>hibernate-validator</artifactId>
+</span><span class='line'>			<version>4.2.0.Final</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.hibernate</groupId>
+</span><span class='line'>			<artifactId>hibernate-entitymanager</artifactId>
+</span><span class='line'>			<version>4.1.9.Final</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>javax.transaction</groupId>
+</span><span class='line'>			<artifactId>jta</artifactId>
+</span><span class='line'>			<version>1.1</version>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>		<dependency>
+</span><span class='line'>			<groupId>org.springframework.data</groupId>
+</span><span class='line'>			<artifactId>spring-data-jpa</artifactId>
+</span><span class='line'>			<version>1.3.0.RELEASE</version>
+</span><span class='line'>			<exclusions>
+</span><span class='line'>				<exclusion>
+</span><span class='line'>					<groupId>org.springframework</groupId>
+</span><span class='line'>					<artifactId>spring-aop</artifactId>
+</span><span class='line'>				</exclusion>
+</span><span class='line'>			</exclusions>
+</span><span class='line'>		</dependency>
+</span><span class='line'>
+</span><span class='line'>	</dependencies>
+</span><span class='line'>	<properties>
+</span><span class='line'>		<jersey.version>2.4.1</jersey.version>
+</span><span class='line'>		<spring.version>3.2.4.RELEASE</spring.version>
+</span><span class='line'>		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</span><span class='line'>	</properties>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Modify web.xml</h2>
+<p>Modify the contents of the web.xml to include the following:</p>
+</li>
+<li><p>A Welcome file.</p>
+</li>
+<li><p>The Context Config Location.<br  /></p>
+</li>
+<li><p>A ContextLoaderLister and RequestContextListener to integrate spring with the web application.</p>
+</li>
+<li><p>A Spring Jersey Web Servlet. Specify the location of the provider packages, enable the JSON POJO Mapping Feature, provide the path where the JSP files for the project are stored to the JSP TemplateBasePath and enable the JSP MVC Feature. In this sample, a configuration file named applicationConfig.xml is created under src/main/resources folder  and the JSP files are placed under WEB-INF/jsp folder in the project layout.</p>
+</li>
+<li><p>A servlet-mapping to map the servlet created in the above step that should be invoked when the client specifies the url matching the url pattern.<br  /></p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><?xml version="1.0" encoding="UTF-8"?>
+</span><span class='line'><!-- This web.xml file is not required when using Servlet 3.0 container,
+</span><span class='line'>     see implementation details http://jersey.java.net/nonav/documentation/latest/jax-rs.html -->
+</span><span class='line'><web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+</span><span class='line'>
+</span><span class='line'>	<welcome-file-list>
+</span><span class='line'>		<welcome-file>index.jsp</welcome-file>
+</span><span class='line'>	</welcome-file-list>
+</span><span class='line'>	
+</span><span class='line'>	<context-param>
+</span><span class='line'>  		<param-name>contextConfigLocation</param-name>
+</span><span class='line'>    	<param-value>classpath:applicationContext.xml</param-value>
+</span><span class='line'>  	</context-param>
+</span><span class='line'>  	<listener>
+</span><span class='line'>    	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</span><span class='line'>  	</listener>
+</span><span class='line'>  	<listener>
+</span><span class='line'>    	<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+</span><span class='line'>  	</listener>
+</span><span class='line'>  
+</span><span class='line'>    <servlet>
+</span><span class='line'>        <servlet-name>Spring Jersey Web Servlet</servlet-name>
+</span><span class='line'>        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+</span><span class='line'>        <init-param>
+</span><span class='line'>            <param-name>jersey.config.server.provider.packages</param-name>
+</span><span class='line'>            <param-value>com.github.elizabetht</param-value>
+</span><span class='line'>        </init-param>
+</span><span class='line'>        <init-param>
+</span><span class='line'>      		<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+</span><span class='line'>      		<param-value>true</param-value>
+</span><span class='line'>    	</init-param>
+</span><span class='line'>    	<init-param>
+</span><span class='line'>        	<param-name>jersey.config.server.mvc.templateBasePath.jsp</param-name>
+</span><span class='line'>        	<param-value>/WEB-INF/jsp</param-value>
+</span><span class='line'>    	</init-param>
+</span><span class='line'>    	<init-param>
+</span><span class='line'>    		<param-name>jersey.config.server.provider.classnames</param-name>
+</span><span class='line'>    		<param-value>org.glassfish.jersey.server.mvc.jsp.JspMvcFeature</param-value>
+</span><span class='line'>		</init-param>
+</span><span class='line'>        <load-on-startup>1</load-on-startup>
+</span><span class='line'>    </servlet>
+</span><span class='line'>    <servlet-mapping>
+</span><span class='line'>        <servlet-name>Spring Jersey Web Servlet</servlet-name>
+</span><span class='line'>        <url-pattern>/webapi/*</url-pattern>
+</span><span class='line'>    </servlet-mapping>
+</span><span class='line'></web-app>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create persistence.xml</h2>
+<p>Create a file named persistence.xml under the folder src/main/resources/META-INF folder in the project to define the persistence unit required by JPA. Add the following to the persistence.xml to define a persistence unit named punit.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><persistence xmlns="http://java.sun.com/xml/ns/persistence"
+</span><span class='line'>	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+</span><span class='line'>	xsi:schemaLocation="{http://java.sun.com/xml/ns/persistence} {http://java.sun.com/xml/ns/persistence_2_0.xsd}"
+</span><span class='line'>	version="2.0">
+</span><span class='line'>	
+</span><span class='line'>	<persistence-unit name="punit">
+</span><span class='line'>	</persistence-unit>
+</span><span class='line'>	
+</span><span class='line'></persistence>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create the Spring Configuration File</h2>
+<p>As defined in the web.xml, create a file named applicationContext.xml under the folder src/main/resources folder in the project to define JPA and Hibernate related configurations. Note that any file created under src/main/resources folder in a maven project will be automagically added by Maven to the classpath. If STS(Spring Tool Suite) is the IDE, go ahead and enable the context, jpa, mvc and tx namespaces. The applicationContext.xml will be as shown below</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><?xml version="1.0" encoding="UTF-8"?>
+</span><span class='line'><beans xmlns="http://www.springframework.org/schema/beans"
+</span><span class='line'>	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+</span><span class='line'>	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+</span><span class='line'>	xmlns:tx="http://www.springframework.org/schema/tx"
+</span><span class='line'>	xmlns:context="http://www.springframework.org/schema/context"
+</span><span class='line'>	xmlns:mvc="http://www.springframework.org/schema/mvc"
+</span><span class='line'>	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+</span><span class='line'>		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+</span><span class='line'>		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+</span><span class='line'>		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+</span><span class='line'>		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+</span><span class='line'>		
+</span><span class='line'></beans>
+</span></code></pre></td></tr></table></div></figure>
+<p>After enabling the required namespaces, include the following (in between the &lt;beans&gt; and &lt;/beans&gt; tags) to indicate that the application is annotation driven, base package for context component scan and base package for the jpa repositories scan.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>	<mvc:annotation-driven />
+</span><span class='line'>				
+</span><span class='line'>	<context:annotation-config />
+</span><span class='line'>	<context:component-scan base-package="com.github.elizabetht" />
+</span><span class='line'>		
+</span><span class='line'>	<jpa:repositories base-package="com.github.elizabetht.repository" />
+</span><span class='line'>	
+</span></code></pre></td></tr></table></div></figure>
+<p>Next, include the bean PersistenceAnnotationBeanPostProcessor. This is necessary to process the Persistence Unit, Persistence Context annotations and for injecting JPA related resources.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+</span></code></pre></td></tr></table></div></figure>
+<p>Include the bean for EntityManagerFactory which lists the various JPA related properties/resources.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+</span><span class='line'>		<property name="persistenceUnitName" value="punit" />
+</span><span class='line'>		<property name="dataSource" ref="dataSource" />
+</span><span class='line'>		<property name="jpaVendorAdapter">
+</span><span class='line'>			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+</span><span class='line'>				<property name="showSql" value="true" />
+</span><span class='line'>			</bean>
+</span><span class='line'>		</property>
+</span><span class='line'>		<property name="jpaPropertyMap">
+</span><span class='line'>			<map>
+</span><span class='line'>				<entry key="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+</span><span class='line'>				<entry key="hibernate.hbm2ddl.auto" value="validate" />
+</span><span class='line'>				<entry key="hibernate.format_sql" value="true" />
+</span><span class='line'>			</map>
+</span><span class='line'>		</property>
+</span><span class='line'>	</bean>
+</span></code></pre></td></tr></table></div></figure>
+<p>Include the bean for data source, where the properties of the MYSQL DB like url, username and password can be specified. Replace &lt;include connection url&gt; with the actual connection url for connecting to the MYSQL DB. Likewise, replace &lt;include username&gt; and &lt;include password&gt; with the actual username and password values.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+</span><span class='line'>		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+</span><span class='line'>		<property name="url" value="jdbc:mysql//<include connection url>:3306/studentEnrollment?autoReconnect=true&amp;createDatabaseIfNotExist=true&amp;" />
+</span><span class='line'>		<property name="username" value="<include username>" />
+</span><span class='line'>		<property name="password" value="<include password>" />
+</span><span class='line'></bean>
+</span></code></pre></td></tr></table></div></figure>
+<p>Include the bean for transaction manager for scoping/controlling the transactions.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+</span><span class='line'>		<property name="entityManagerFactory" ref="entityManagerFactory" />
+</span><span class='line'></bean>
+</span><span class='line'>	
+</span><span class='line'><tx:annotation-driven transaction-manager="transactionManager" />
+</span></code></pre></td></tr></table></div></figure>
+<p>Thus ends the long configuration in applicationContext.xml</p>
+<ol>
+<li><h2>Create JSP Files for Student Signup/Login</h2>
+<p>Create a folder named "jsp" under WEB-INF (This is where the jsp files will be created as indicated in the web.xml for the JSP TemplateBasePath).</p>
+</li>
+</ol>
+<p>Create a file signup.jsp to include a form to get the input details like UserName, Password, FirstName, LastName, DateOfBirth and EmailAddress of the student. A snapshot of the signup page is as follows:</p>
+<p><img src="/assets/images/elizabetht/signup.png" alt="Jersey REST Spring Hibernate Signup Layout" title="Jersey REST Spring Hibernate Signup Layout" /></p>
+<p>Next, create a file login.jsp to include a form with UserName and Password. A snapshot of the login page is as follows:</p>
+<p><img src="/assets/images/elizabetht/login.png" alt="Jersey REST Spring Hibernate Login Layout" title="Jersey REST Spring Hibernate Login Layout" /></p>
+<p>Also create success.jsp to indicate the login success and failure.jsp to indicate login failure (These are just pages used to display the contents - no processing logic involved).</p>
+<p>This application uses twitter bootstrap <a href="http://getbootstrap.com/">http://getbootstrap.com/</a> and <a href="http://bootswatch.com/united/">http://bootswatch.com/united/</a> as style sheets. It also uses a datepicker stylesheet as well to pop up a calendar for the DateOfBirth field in the Student Signup page (<a href="http://www.eyecon.ro/bootstrap-datepicker/">http://www.eyecon.ro/bootstrap-datepicker/</a>).</p>
+<p>A reference link to the files under webapp folder of this application can be found at <a href="https://github.com/elizabetht/StudentEnrollmentWithREST/tree/master/src/main/webapp">https://github.com/elizabetht/StudentEnrollmentWithREST/tree/master/src/main/webapp</a></p>
+<ol>
+<li><h2>Create packages for Resource, Service, Repository and Model tier classes</h2>
+<p>Create packages each for the Jersey Resource, Service, Repository and Model classes under the src/main/java folder.</p>
+</li>
+</ol>
+<p>A sample snapshot of the project after the package creation is as shown below:</p>
+<p><img src="/assets/images/elizabetht/jersey-package.png" alt="Jersey REST Spring Package Layout" title="Jersey REST Spring Package Layout" /></p>
+<ol>
+<li><h2>Create classes for Model Tier</h2>
+<p>Create a POJO class named Student.java inside the package com.github.elizabetht.model to include the details of the Student model entity during signup. Create another POJO class named StudentLogin.java inside the same package com.github.elizabetht.model to include the Student Login details.</p>
+</li>
+</ol>
+<p>Annotate the classes with @Component to be picked by the Context-Component Scan of the Jersey-Spring framework. Also annotate the classes with @XmlRootElement to indicate the XML Element.</p>
+<p>A reference link to the files for the Model classes can be found at <a href="https://github.com/elizabetht/StudentEnrollmentWithREST/tree/master/src/main/java/com/github/elizabetht/model">https://github.com/elizabetht/StudentEnrollmentWithREST/tree/master/src/main/java/com/github/elizabetht/model</a></p>
+<ol>
+<li><h2>Create class for Repository Tier</h2>
+<p>Create an interface class named StudentRepository.java inside the package com.github.elizabetht.repository to support the repository tier database operations.</p>
+</li>
+</ol>
+<p>There are two interface methods needed for the application's purpose.</p>
+<ul>
+<li>To Insert the Student Signup details into the Database</li>
+<li>To Verify the Student Login details from the Database</li>
+</ul>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>@Repository("studentRepository")
+</span><span class='line'>public interface StudentRepository extends JpaRepository<Student, Long> {
+</span><span class='line'>	
+</span><span class='line'>	@Query("select s from Student s where s.userName = :userName")
+</span><span class='line'>	Student findByUserName(@Param("userName") String userName);
+</span><span class='line'>	
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<p>The save() method is supported by the Hibernate implementation and hence no separate SQL statements are required for the data insert.</p>
+<ol>
+<li><h2>Create classes for Service Tier</h2>
+<p>Create an interface class named StudentService.java inside the package com.github.elizabetht.service to support the service tier operations.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>public interface StudentService {
+</span><span class='line'>	Student save(Student student);
+</span><span class='line'>	boolean findByLogin(String userName, String password);
+</span><span class='line'>	boolean findByUserName(String userName);
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<p>Create a service tier implementation class (a POJO indeed) named StudentServiceImpl.java inside the package com.github.elizabetht.service. This is where the application logic goes - either to save the student details into the database or to verify the student (already saved) details from the database.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>@Service("studentService")
+</span><span class='line'>public class StudentServiceImpl implements StudentService {
+</span><span class='line'>
+</span><span class='line'>	@Autowired
+</span><span class='line'>	private StudentRepository studentRepository;
+</span><span class='line'>	
+</span><span class='line'>	@Transactional
+</span><span class='line'>	public Student save(Student student) {
+</span><span class='line'>		return studentRepository.save(student);
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public boolean findByLogin(String userName, String password) {	
+</span><span class='line'>		Student stud = studentRepository.findByUserName(userName);
+</span><span class='line'>		
+</span><span class='line'>		if(stud != null && stud.getPassword().equals(password)) {
+</span><span class='line'>			return true;
+</span><span class='line'>		} 
+</span><span class='line'>		
+</span><span class='line'>		return false;		
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	public boolean findByUserName(String userName) {
+</span><span class='line'>		Student stud = studentRepository.findByUserName(userName);
+</span><span class='line'>		
+</span><span class='line'>		if(stud != null) {
+</span><span class='line'>			return true;
+</span><span class='line'>		}
+</span><span class='line'>		
+</span><span class='line'>		return false;
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create class for Resource Tier</h2>
+<p>Create a Resource tier POJO class named StudentResource.java inside the package com.github.elizabetht.resource. This is where a REST API is implemented for each of the operation performed from the front end.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>@Component
+</span><span class='line'>@Path("studentResource")
+</span><span class='line'>@XmlRootElement
+</span><span class='line'>public class StudentResource {
+</span><span class='line'>
+</span><span class='line'>	@Autowired
+</span><span class='line'>	private StudentService studentService;
+</span><span class='line'>
+</span><span class='line'>	@GET
+</span><span class='line'>	@Path("signup")
+</span><span class='line'>	@Produces(MediaType.TEXT_HTML)
+</span><span class='line'>	public Response signup() {
+</span><span class='line'>		return Response.ok(new Viewable("/signup")).build();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@POST
+</span><span class='line'>	@Path("signup")
+</span><span class='line'>	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+</span><span class='line'>	@Produces(MediaType.TEXT_HTML)
+</span><span class='line'>	public Response signup(@FormParam("userName") String userName,
+</span><span class='line'>			@FormParam("password") String password,
+</span><span class='line'>			@FormParam("firstName") String firstName,
+</span><span class='line'>			@FormParam("lastName") String lastName,
+</span><span class='line'>			@FormParam("dateOfBirth") String dateOfBirth,
+</span><span class='line'>			@FormParam("emailAddress") String emailAddress)
+</span><span class='line'>			throws ParseException {
+</span><span class='line'>
+</span><span class='line'>		if (userName == null || password == null || firstName == null
+</span><span class='line'>				|| lastName == null || dateOfBirth == null
+</span><span class='line'>				|| emailAddress == null) {
+</span><span class='line'>			return Response.status(Status.PRECONDITION_FAILED).build();
+</span><span class='line'>		}
+</span><span class='line'>
+</span><span class='line'>		Student student = new Student();
+</span><span class='line'>		student.setUserName(userName);
+</span><span class='line'>		student.setPassword(password);
+</span><span class='line'>		student.setFirstName(firstName);
+</span><span class='line'>		student.setLastName(lastName);
+</span><span class='line'>
+</span><span class='line'>		student.setDateOfBirth(new java.sql.Date(new SimpleDateFormat(
+</span><span class='line'>				"MM/dd/yyyy").parse(dateOfBirth.substring(0, 10)).getTime()));
+</span><span class='line'>
+</span><span class='line'>		student.setEmailAddress(emailAddress);
+</span><span class='line'>
+</span><span class='line'>		if (studentService.findByUserName(userName)) {
+</span><span class='line'>			Map<String, Object> map = new HashMap<String, Object>();
+</span><span class='line'>			map.put("message", "User Name exists. Try another user name");
+</span><span class='line'>			map.put("student", student);
+</span><span class='line'>			return Response.status(Status.BAD_REQUEST)
+</span><span class='line'>					.entity(new Viewable("/signup", map)).build();
+</span><span class='line'>		} else {
+</span><span class='line'>			studentService.save(student);
+</span><span class='line'>			return Response.ok().entity(new Viewable("/login")).build();
+</span><span class='line'>		}
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@GET
+</span><span class='line'>	@Path("login")
+</span><span class='line'>	@Produces(MediaType.TEXT_HTML)
+</span><span class='line'>	public Response login() {
+</span><span class='line'>		return Response.ok(new Viewable("/login")).build();
+</span><span class='line'>	}
+</span><span class='line'>
+</span><span class='line'>	@POST
+</span><span class='line'>	@Path("login")
+</span><span class='line'>	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+</span><span class='line'>	@Produces(MediaType.TEXT_HTML)
+</span><span class='line'>	public Response login(@FormParam("userName") String userName,
+</span><span class='line'>			@FormParam("password") String password) {
+</span><span class='line'>
+</span><span class='line'>		if (userName == null || password == null) {
+</span><span class='line'>			return Response.status(Status.PRECONDITION_FAILED).build();
+</span><span class='line'>		}
+</span><span class='line'>
+</span><span class='line'>		boolean found = studentService.findByLogin(userName, password);
+</span><span class='line'>		if (found) {
+</span><span class='line'>			return Response.ok().entity(new Viewable("/success")).build();
+</span><span class='line'>		} else {
+</span><span class='line'>			return Response.status(Status.BAD_REQUEST)
+</span><span class='line'>					.entity(new Viewable("/failure")).build();
+</span><span class='line'>		}
+</span><span class='line'>	}
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Create the DB Schema in a MYSQL DB</h2>
+<p>Connect to the MySQL DB which is to be used for this application and create a new DB Schema named studentEnrollment using the MySQL Workbench.
+This is necessary as the DB Schema name of studentEnrollment is specified in the dataSource bean in applicationContext.xml</p>
+</li>
+</ol>
+<p>Once the studentEnrollment DB Schema is created, create a table named student inside the DB Schema using the CREATE TABLE statement as follows:</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>CREATE TABLE `student` (
+</span><span class='line'>  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+</span><span class='line'>  `dateOfBirth` datetime NOT NULL,
+</span><span class='line'>  `emailAddress` varchar(255) NOT NULL,
+</span><span class='line'>  `firstName` varchar(255) NOT NULL,
+</span><span class='line'>  `lastName` varchar(255) NOT NULL,
+</span><span class='line'>  `password` varchar(8) NOT NULL,
+</span><span class='line'>  `userName` varchar(20) NOT NULL,
+</span><span class='line'>  PRIMARY KEY (`id`)
+</span><span class='line'>) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=latin1;
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Deploying the Application on Tomcat Server</h2>
+<p>Once the above steps are complete and the project is successfully built, the Java web application is ready to deployed on the Tomcat Server 7.</p>
+</li>
+</ol>
+<p>The Java web application can be deployed locally by right clicking on the project and choosing the "Run As->Run on Server" option.</p>
+<p>The same can be deployed remotely on any native server that supports Tomcat by copying the WAR file (Right click on the project and choose Export as WAR File option) to /var/lib/tomcat7 folder (or appropriate tomcat directory) and restarting the tomcat server.</p>
+<ol>
+<li><h2>Clone or Download code</h2>
+<p>If using git, clone a copy of this project here: <a href="https://github.com/elizabetht/StudentEnrollmentWithREST.git">https://github.com/elizabetht/StudentEnrollmentWithREST.git</a></p>
+</li>
+</ol>
+<p>In case of not using git, download the project as ZIP or tar.gz file here: <a href="https://github.com/elizabetht/StudentEnrollmentWithREST/releases/tag/1.1">https://github.com/elizabetht/StudentEnrollmentWithREST/releases/tag/1.1</a></p>
+</p>
+                <a href="/blog/posts/student-enrollment-using-jersey-rest-with-spring/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                <ul class="pager">
+                    
+                    <li class="previous"><a href="/blog/page/2/">&larr; Newer</a>
+                    </li>
+                    
+                    
+                    <li class="next"><a href="/blog/page/4/">Older &rarr;</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+        <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <p>Copyright &copy; Your Website 2014</p>
+            </div>
+        </div>
+    </div>
+</footer>
+        <!-- jQuery Version 1.11.0 -->
+<script src="/javascripts/jquery-1.11.0.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/javascripts/bootstrap.min.js"></script>
+
+<!-- Script to Activate the Carousel -->
+<script>
+    $('.carousel').carousel({
+        interval: 5000 //changes the speed
+    })
+</script>
+
+    </body>
+</html>

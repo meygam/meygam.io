@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Post 4 title | Business Casual</title>
+    <title>Installing Oracle Java 7 and Tomcat 7 on Ubuntu 13 | Business Casual</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
@@ -81,37 +81,59 @@
         <div class="box">
             <div class="col-lg-12">
                 <hr>
-                <h2 class="intro-text">Post 4 title</h2>
+                <h2 class="intro-text">Installing Oracle Java 7 and Tomcat 7 on Ubuntu 13</h2>
                 <hr>
             </div>
             <div class="col-lg-12">
                 
-                    <img class="img-responsive img-border img-full" src="/images/slide-1.jpg" alt="">
-                
                 <h2>
-                    <small>October 13, 2013</small>
+                    <small>January 17, 2014</small>
                 </h2>
-                <p><p>Lid est <strong>laborum dolo</strong> rumes fugats untras. Etharums ser quidem rerum facilis dolores nemis omnis fugats vitaes nemo
-minima rerums unsers sadips amets. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo.</p>
-<!--more-->
-<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae
-vitae dicta sunt explicabo.</p>
+                <p><p>Setting up a new Ubuntu server with Java 7 &amp; Tomcat 7 seems to be trivial, but often I had to do it at my workplace and everytime I had to google it to do this. So I thought I will list down the steps in my blog.</p>
+<!-- more -->
+<h3>Install Oracle Java 7</h3>
+<p>Run the below commands to install Oracle Java 7 - steps followed from <a href="http://www.webupd8.org/2012/01/install-oracle-java-jdk-7-in-ubuntu-via.html" target="_blank">INSTALL ORACLE JAVA 7 IN UBUNTU VIA PPA REPOSITORY</a></p>
+<pre><code>sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java7-installer
+</code></pre>
+<p>Check if the right version of java is installed</p>
+<pre><code>java -version
+
+java version "1.7.0_45"
+Java(TM) SE Runtime Environment (build 1.7.0_45-b06)
+Java HotSpot(TM) 64-Bit Server VM (build 20.45-b01, mixed mode)
+</code></pre>
+<p>Run the below command to set the Java environment variables</p>
+<pre><code>sudo apt-get install oracle-java7-set-default
+</code></pre>
+<h3>Install Unzip</h3>
+<p>Run the below command to install unzip, we need this to unzip the tomcat binaries.</p>
+<pre><code>sudo apt-get install unzip
+</code></pre>
+<h3>Install Tomcat 7</h3>
+<p>Download the latest tomcat from tomcat website &amp; unzip it. And give execute access to all .sh files. Start the tomcat manually.</p>
+<pre><code>cd /opt
+sudo wget http://www.webhostingjams.com/mirror/apache/tomcat/tomcat-7/v7.0.52/bin/apache-tomcat-7.0.52.zip
+sudo unzip apache-tomcat-7.0.52.zip
+sudo chmod +x /opt/apache-tomcat-7.0.52/bin/*.sh
+sudo /opt/apache-tomcat-7.0.52/bin/startup.sh
+</code></pre>
+<p>Check if the tomcat is running. The below command should return the tomcat default page.</p>
+<pre><code>curl http://localhost:8080
+</code></pre>
+<p>Note: I don't use tomcat7 from ubuntu repository as it some times screws up my Oracle Java installation and installs Open JDK.</p>
 </p>
                 <hr>
             </div>
             <div class="col-lg-12">
                 <ul class="pager">
                     
-                        <li class="previous"><a href="/blog/posts/post-3-title/">&larr; Newer</a>
+                        <li class="previous"><a href="/blog/posts/jenkins-release-upload/">&larr; Newer</a>
                         </li>
                     
                     
-                        <li class="next"><a href="/blog/posts/spring-cache-abstraction-using-ehcache/">Older &rarr;</a>
+                        <li class="next"><a href="/blog/posts/wordpress-on-aws/">Older &rarr;</a>
                         </li>
                     
                 </ul>

@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows | Business Casual</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/stylesheets/business-casual.css" rel="stylesheet">
+
+    <!-- Fonts -->
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Josefin+Slab:100,300,400,600,700,100italic,300italic,400italic,600italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.javascripts/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+    <body>
+        
+<div class="brand">Business Casual</div>
+<div class="address-bar">3481 Melrose Place | Beverly Hills, CA 90210 | 123.456.7890</div>
+
+        <!-- Navigation -->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- navbar-brand is hidden on larger screens, but visible when the menu is collapsed -->
+            <a class="navbar-brand" href="/">Business Casual</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                
+                <li>
+                    <a href="/">Home</a>
+                </li>
+                
+                <li>
+                    <a href="/about.html">About</a>
+                </li>
+                
+                <li>
+                    <a href="/blog/">Blog</a>
+                </li>
+                
+                <li>
+                    <a href="/contact.html">Contact</a>
+                </li>
+                
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+        <div class="container">
+    <div class="row">
+        <div class="box">
+            <div class="col-lg-12">
+                <hr>
+                <h2 class="intro-text">Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows</h2>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                
+                <h2>
+                    <small>January 13, 2014</small>
+                </h2>
+                <p><p>This post will show how to automate the deployment process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - to build the project, run the unit tests, upload the built artifacts to a Sonatype Snapshot repository, run the Cobertura Code Coverage reports and deploy the application to the Amazon EC2. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+<!-- more -->
+<ol>
+<li><h2>Install Jenkins as a Windows Service</h2>
+<p>Navigate to jenkins-ci.org website using an Internet browser and download the Windows native package (the link is underlined for easy identification) as shown from the right side pane of the Download Jenkins tab.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-installation.png" alt="Jenkins Installation package" title="Jenkins Installation Package" /></p>
+<p>Once the download is complete, uncompress the zip file and click on the jenkins-1.xxx.msi file. Proceed through the configuration steps to install the Jenkins as a Windows service.</p>
+<ol>
+<li><h2>Modify Default Jenkins Port</h2>
+<p>By default Jenkins runs on the port 8080. In order to avoid conflict with other applications, the default port can be modified by editing the jenkins.xml found under C:\Program Files (x86)\Jenkins location. As shown below, modify the httpPort to 8082.</p>
+</li>
+</ol>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><service>
+</span><span class='line'>  <id>jenkins</id>
+</span><span class='line'>  <name>Jenkins</name>
+</span><span class='line'>  <description>This service runs Jenkins continuous integration system.</description>
+</span><span class='line'>  <env name="JENKINS_HOME" value="%BASE%"/>
+</span><span class='line'>  <!--
+</span><span class='line'>    if you'd like to run Jenkins with a specific version of Java, specify a full path to java.exe.
+</span><span class='line'>    The following value assumes that you have java in your PATH.
+</span><span class='line'>  -->
+</span><span class='line'>  <executable>%BASE%\jre\bin\java</executable>
+</span><span class='line'>  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8082</arguments>
+</span><span class='line'>  <!--
+</span><span class='line'>    interactive flag causes the empty black Java window to be displayed.
+</span><span class='line'>    I'm still debugging this.
+</span><span class='line'>  <interactive />
+</span><span class='line'>  -->
+</span><span class='line'>  <logmode>rotate</logmode>
+</span><span class='line'>
+</span><span class='line'>  <onfailure action="restart" />
+</span><span class='line'></service>
+</span></code></pre></td></tr></table></div></figure>
+<p>Once the modification is saved in jenkins.xml file, restart the Jenkins service from the Windows Task Manager->Services and right clicking on the Jenkins service and choose Stop Service to stop the service as shown below.</p>
+<p><img src="/assets/images/elizabetht/jenkins-stop.png" alt="Jenkins Stop Service" title="Jenkins Stop Service" /></p>
+<p>Once the status of the service changes to stopped, restart the service by right clicking on the Jenkins service and choose Start Service to start the service again.</p>
+<p><img src="/assets/images/elizabetht/jenkins-restart.png" alt="Jenkins Restart Service" title="Jenkins Restart Service" /></p>
+<p>Navigate to localhost:8082 to verify if the Jenkins restart was successful as shown below - Jenkins Dashboard will be displayed. Note that it takes a while before the Jenkins service becomes available.</p>
+<p><img src="/assets/images/elizabetht/jenkins-dashboard.png" alt="Jenkins Dashboard" title="Jenkins Dashboard" /></p>
+<ol>
+<li><h2>Install Plugins</h2>
+<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Manage Plugins as shown in the snapshot below.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-manageplugins.png" alt="Jenkins Manage Plugins" title="Jenkins Manage Plugins" /></p>
+<p>Install the following plugins and restart Jenkins for the changes to take effect.</p>
+<ul>
+<li><p>GitHub Plugin (for integrating Github with Jenkins)</p>
+</li>
+<li><p>Jenkins Cobertura Plugin (for Cobertura support)</p>
+</li>
+<li><p>Deploy to Container Plugin (for deploying the WAR to the Tomcat Container on EC2 instance)</p>
+</li>
+<li><p>Jenkins Artifactory Plugin (for deploying the built Maven artifacts to the Snapshot repository)</p>
+</li>
+<li><h2>Configure System</h2>
+<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Configure System as shown in the snapshot below.</p>
+</li>
+</ul>
+<p><img src="/assets/images/elizabetht/jenkins-configuresystem.png" alt="Jenkins Configure System" title="Jenkins Configure System" /></p>
+<p>Navigate to the JDK section and click on "Add JDK" to add the JDK installation as shown in the snapshot below. Specify a JDK Name, choose the JDK Version to install and follow the on-screen instructions to save the Oracle Login credentials. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-java.png" alt="Jenkins Java Installation" title="Jenkins Java Installation" /></p>
+<p>Next, proceed to the Git section and click on "Add Git" to add the Git installation as shown in the snapshot below. Specify Git Name, specify the path to Git executable and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-gitinstall.png" alt="Jenkins Git Installation" title="Jenkins Git Installation" /></p>
+<p>Next, proceed to the Maven section and click on "Add Maven" to add the Maven installation as shown in the snapshot below. Specify Maven Name, choose the Maven Version to install and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-maven.png" alt="Jenkins Maven Installation" title="Jenkins Maven Installation" /></p>
+<p>Proceed to the Git plugin section and enter the values for Github Username and Email Address as credentials as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-git.png" alt="Jenkins Gitplugin Credentials" title="Jenkins Gitplugin Credentials" /></p>
+<p>Proceed to the Artifactory section and click on "Add" to add the information about the artifactory servers. Specify the URL for the snapshot repository and provide the deployer credentials created from the Artifactory server website as shown below. Click on "Test Connection" to test if the connection parameters are good to save and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-artifactory.png" alt="Jenkins Artifactory Servers Configuration" title="Jenkins Artifactory Servers Configuration" /></p>
+<p>Next, proceed to the Email Notification section and enter the SMTP Server details as shown below. Click on the Advanced button to add the further details required and Save the changes. Click on "Test configuration by sending test e-mail", enter the test e-mail recipient and click on "Test configuration" to see if the email is successfully sent.</p>
+<p><img src="/assets/images/elizabetht/jenkins-email.png" alt="Jenkins Email Notification" title="Jenkins Email Notification" /></p>
+<ol>
+<li><h2>Create a New Jenkins Job</h2>
+<p>From the Jenkins Dashboard, click on "New Job" to create a new job. Enter a name for the job and choose "Build a maven2/3 project" as option and click on OK as shown below.</p>
+</li>
+</ol>
+<p><img src="/assets/images/elizabetht/jenkins-newjob.png" alt="Jenkins New Job" title="Jenkins New Job" /></p>
+<p>From the New Job Configuration screen, proceed to the Source Code Management section and specify the Git Repository URL for the project as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-sourcecodemgmt.png" alt="Jenkins Source Code Management" title="Jenkins Source Code Management" /></p>
+<p>Next, from the Build Triggers section, select the options desired as shown below and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-buildtriggers.png" alt="Jenkins Build Triggers" title="Jenkins Build Triggers" /></p>
+<p>Proceed to the Build section, enter the maven goals for building a snapshot as shown below and Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-build.png" alt="Jenkins Build" title="Jenkins Build" /></p>
+<p>Proceed to the Build Settings section. Select the option for Email Notification and enter the values for the email recipients as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-emailnotifications.png" alt="Jenkins Email Notifications" title="Jenkins Email Notifications" /></p>
+<p>Under the Post-build Actions, click on "Add post-build action" button and select "Deploy war/ear to a container". In the Amazon EC2, a Tomcat Manager (manager as username) instance has to be configured with roles manager-gui and manager-script to allow the remote deployment of the WAR/EAR to the Tomcat Container. The configuration steps can be found in the link <a href="https://help.ubuntu.com/13.04/serverguide/tomcat.html">https://help.ubuntu.com/13.04/serverguide/tomcat.html</a> under the section of "Tomcat administration webapps"</p>
+<p>Once the Tomcat Manager webapp configuration is complete in the Amazon EC2 instance, enter the details necessary for the deployment as shown below. Save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-deploy.png" alt="Jenkins Deployment" title="Jenkins Deployment" /></p>
+<p>Similarly, from the Post-build Actions, click on "Add post-build action" button and select "Publish Cobertura Coverage Report". Enter the Cobertura XML Report Pattern as shown below and save the changes.</p>
+<p><img src="/assets/images/elizabetht/jenkins-cobertura.png" alt="Jenkins Cobertura Coverage Report" title="Jenkins Cobertura Coverage Report" /></p>
+<ol>
+<li><h2>Configure settings.xml</h2>
+<p>In order to upload the built Maven artifacts to the artifactory server, configure the Jenkins settings.xml found in C:\Program Files (x86)\Jenkins\tools\hudson.tasks.Maven<em>MavenInstallation\Maven</em>3.1\conf folder with the same parameters as found in the default settings.xml (usually found under C:\Program Files\Apache Software Foundation\apache-maven-3.1.0\conf for a Windows machine) of the Maven installation on the system.</p>
+</li>
+</ol>
+<p>Typically, the server section needs to be configured in the settings.xml for Jenkins matching with the details of the Artifactory server.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><servers>
+</span><span class='line'>    <server>
+</span><span class='line'>      <id>sonatype-nexus-snapshots</id>
+</span><span class='line'>      <username>username</username>
+</span><span class='line'>      <password>password</password>
+</span><span class='line'>    </server>
+</span><span class='line'>    <server>
+</span><span class='line'>      <id>sonatype-nexus-staging</id>
+</span><span class='line'>      <username>username</username>
+</span><span class='line'>      <password>password</password>
+</span><span class='line'>	</server>
+</span><span class='line'></servers>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Update pom.xml</h2>
+<p>The pom.xml file for the project needs to be configured with the following plugins under the build section for the deployment to snapshot repository and for running the Cobertura Coverage report.</p>
+</li>
+<li><p>maven-compiler-plugin</p>
+</li>
+<li><p>maven-deploy-plugin</p>
+</li>
+<li><p>cobertura-maven-plugin</p>
+</li>
+</ol>
+<p>Also add parent, scm and developer section to comply with the requirements put forth by the Artifactory server management as shown below.</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>    <parent>
+</span><span class='line'>		<groupId>org.sonatype.oss</groupId>
+</span><span class='line'>		<artifactId>oss-parent</artifactId>
+</span><span class='line'>		<version>7</version>
+</span><span class='line'>	</parent>
+</span><span class='line'>
+</span><span class='line'>	<scm>
+</span><span class='line'>		<connection>scm:git:git@github.com:elizabetht/StudentEnrollmentWithREST.git</connection>
+</span><span class='line'>		<developerConnection>scm:git:git@github.com:elizabetht/StudentEnrollmentWithREST.git</developerConnection>
+</span><span class='line'>		<url>git@github.com:elizabetht/StudentEnrollmentWithREST.git</url>
+</span><span class='line'>		<tag>StudentEnrollmentWithREST-1.3</tag>
+</span><span class='line'>	</scm>
+</span><span class='line'>	<developers>
+</span><span class='line'>		<developer>
+</span><span class='line'>			<id>elizabetht</id>
+</span><span class='line'>			<name>Elizabeth Thomas</name>
+</span><span class='line'>			<email>email2eliza@gmail.com</email>
+</span><span class='line'>		</developer>
+</span><span class='line'>	</developers>
+</span><span class='line'>
+</span><span class='line'>	<build>
+</span><span class='line'>		<finalName>StudentEnrollmentWithREST</finalName>
+</span><span class='line'>		<plugins>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.apache.maven.plugins</groupId>
+</span><span class='line'>				<artifactId>maven-compiler-plugin</artifactId>
+</span><span class='line'>				<version>2.5.1</version>
+</span><span class='line'>				<inherited>true</inherited>
+</span><span class='line'>				<configuration>
+</span><span class='line'>					<source>1.6</source>
+</span><span class='line'>					<target>1.6</target>
+</span><span class='line'>				</configuration>
+</span><span class='line'>			</plugin>
+</span><span class='line'>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.apache.maven.plugins</groupId>
+</span><span class='line'>				<artifactId>maven-deploy-plugin</artifactId>
+</span><span class='line'>				<version>2.8.1</version>
+</span><span class='line'>				<executions>
+</span><span class='line'>					<execution>
+</span><span class='line'>						<id>default-deploy</id>
+</span><span class='line'>						<phase>deploy</phase>
+</span><span class='line'>						<goals>
+</span><span class='line'>							<goal>deploy</goal>
+</span><span class='line'>						</goals>
+</span><span class='line'>					</execution>
+</span><span class='line'>				</executions>
+</span><span class='line'>			</plugin>					
+</span><span class='line'>
+</span><span class='line'>			<plugin>
+</span><span class='line'>				<groupId>org.codehaus.mojo</groupId>
+</span><span class='line'>				<artifactId>cobertura-maven-plugin</artifactId>
+</span><span class='line'>				<version>2.6</version>
+</span><span class='line'>				<configuration>
+</span><span class='line'>					<formats>
+</span><span class='line'>						<format>html</format>
+</span><span class='line'>						<format>xml</format>
+</span><span class='line'>					</formats>
+</span><span class='line'>				</configuration>
+</span><span class='line'>				<executions>
+</span><span class='line'>					<execution>
+</span><span class='line'>						<phase>package</phase>
+</span><span class='line'>						<goals>
+</span><span class='line'>							<goal>cobertura</goal>
+</span><span class='line'>						</goals>
+</span><span class='line'>					</execution>
+</span><span class='line'>				</executions>
+</span><span class='line'>			</plugin>
+</span><span class='line'>		</plugins>
+</span><span class='line'>	</build>
+</span></code></pre></td></tr></table></div></figure>
+<ol>
+<li><h2>Build Now</h2>
+<p>Once the above configuration steps are complete, click on "Build Now" under the Jenkins -> Upload REST Snapshot Artifacts (or the respective Job name) to build the project based on the configuration.</p>
+</li>
+</ol>
+<p>The console output has the detailed logs of what steps were initiated by the configuration and the outcome of the entire build.</p>
+<p>The timestamp of the WAR deployed to Amazon EC2 instance can be checked to see if the deployment is successful. In the same way, the snapshot repository can be checked to see if the upload of the artifacts is successful.</p>
+<p>Thus the entire process of building the project along with unit tests whenever a SCM change is triggered or under another condition, running code coverage reports, uploading the artifacts built to the snapshot artifactory repository, deploying the WAR to the remote server container and triggering emails to the recipients can be automated with a click of a button through Jenkins.</p>
+</p>
+                <hr>
+            </div>
+            <div class="col-lg-12">
+                <ul class="pager">
+                    
+                        <li class="previous"><a href="/blog/posts/wordpress-on-aws/">&larr; Newer</a>
+                        </li>
+                    
+                    
+                        <li class="next"><a href="/blog/posts/jersey2-rest-client-with-junit-and-jmock/">Older &rarr;</a>
+                        </li>
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+        <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <p>Copyright &copy; Your Website 2014</p>
+            </div>
+        </div>
+    </div>
+</footer>
+        <!-- jQuery Version 1.11.0 -->
+<script src="/javascripts/jquery-1.11.0.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/javascripts/bootstrap.min.js"></script>
+
+<!-- Script to Activate the Carousel -->
+<script>
+    $('.carousel').carousel({
+        interval: 5000 //changes the speed
+    })
+</script>
+
+    </body>
+</html>
