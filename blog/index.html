@@ -102,7 +102,7 @@
 <p>Docker file to have apache installed in it looks like below. Will take a look what each line does.</p>
 <p>{% highlight ruby linenos %}
 FROM    ubuntu:14.04
-MAINTAINER Saravana Kumar Periyasamy <a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#115;&#x61;&#x72;&#x61;&#118;&#x61;&#110;&#97;&#x6b;&#x75;&#x6d;&#97;&#114;&#46;&#x70;&#101;&#x72;&#x69;&#x79;&#97;&#115;&#x61;&#109;&#121;&#64;&#x67;&#109;&#97;&#105;&#x6c;.&#99;&#x6f;&#x6d;">&#115;&#x61;&#x72;&#97;&#118;&#97;&#x6e;&#97;&#x6b;&#117;&#109;a&#x72;&#x2e;&#112;&#x65;&#x72;&#105;&#x79;&#x61;&#115;&#x61;&#x6d;&#121;&#x40;&#103;&#x6d;&#x61;&#x69;&#108;&#x2e;&#99;&#111;&#109;</a></p>
+MAINTAINER Saravana Kumar Periyasamy <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#58;&#115;&#97;&#x72;&#97;&#118;&#97;&#110;&#x61;&#x6b;&#117;&#109;&#97;&#x72;&#x2e;&#112;&#x65;&#114;&#x69;&#121;&#x61;&#x73;&#x61;&#x6d;&#121;&#x40;&#x67;&#x6d;&#97;&#105;&#108;&#46;&#x63;&#x6f;&#109;">&#115;&#97;&#x72;&#x61;v&#97;&#110;&#97;&#107;&#x75;&#109;&#x61;&#114;&#x2e;&#x70;&#x65;&#x72;&#105;&#121;&#x61;&#x73;&#x61;&#109;&#121;&#x40;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a></p>
 <pre><code>RUN     apt-get update
 RUN     apt-get install -y apache2
 CMD     service apache2 start &amp;&amp; tail -f    /var/log/apache2/error.log
