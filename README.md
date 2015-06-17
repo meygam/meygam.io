@@ -1,6 +1,6 @@
 #Tools Used
- 1. [Grain]
- 2. [Github Pages]
+1. [Grain]
+2. [Github Pages]
   
 #Grain Theme - Business Casual
 
@@ -10,8 +10,7 @@ Please, refer to the [theme page] and the [documentation] for further details.
 
 #Deployment Steps
 1. do `./grainw generate`, this will generate the website contents in the `target` folder.
-2. do `./grainw deploy`, this will publish the content in `target` folder to the `gh-pages` branch of the repo. 
-    `git@github.com:meygam/meygam.io.git`
+2. do `./grainw deploy`, this will publish the content in `target` folder to the `gh-pages` branch of the repo `git@github.com:meygam/meygam.io.git`.
 
 #Domain Name Setup
 
