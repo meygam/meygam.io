@@ -96,14 +96,19 @@
 <h3>Docker File</h3>
 <p>To run a docker container, we need an docker image. You could either pull a publicly available images from https://registry.hub.docker.com/ or build your own. In our case we will build our own docker image from a ubuntu base image.</p>
 <p>Docker file to have apache installed in it looks like below. Will take a look what each line does.</p>
-<p>{% highlight ruby linenos %}
-FROM    ubuntu:14.04
-MAINTAINER Saravana Kumar Periyasamy <a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x73;&#x61;&#x72;&#97;&#118;&#97;&#x6e;&#x61;&#x6b;&#117;&#x6d;&#x61;&#x72;&#46;&#x70;e&#114;&#105;&#121;&#97;&#115;&#x61;&#x6d;&#121;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#115;&#x61;&#114;&#x61;&#118;&#97;&#110;&#x61;&#x6b;&#117;&#x6d;&#97;&#114;&#x2e;&#112;&#101;&#114;&#x69;&#121;&#x61;&#x73;&#x61;&#109;y&#x40;&#x67;&#109;&#x61;&#105;&#108;&#46;&#99;&#x6f;&#109;</a></p>
-<pre><code>RUN     apt-get update
-RUN     apt-get install -y apache2
-CMD     service apache2 start &amp;&amp; tail -f    /var/log/apache2/error.log
-</code></pre>
-<p>{% endhighlight %}</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>	FROM    ubuntu:14.04
+</span><span class='line'>	MAINTAINER Saravana Kumar Periyasamy <saravanakumar.periyasamy@gmail.com>
+</span><span class='line'>
+</span><span class='line'>	RUN     apt-get update
+</span><span class='line'>	RUN     apt-get install -y apache2
+</span><span class='line'>	CMD     service apache2 start && tail -f 	/var/log/apache2/error.log
+</span></code></pre></td></tr></table></div></figure>
 <p>Line#1: takes the base image ubuntu, tag 14.04.
 Line#2: is the maintainers meta data for this new docker image.
 Line#3/4: Runs apt-get update and installs apache2.
@@ -111,20 +116,25 @@ Line#5: Starts Apache and tails the apache logs. This will be the default comman
 <h3>Vagrant File</h3>
 <p>To build docker image from this file we need a computer with docker installed. To make life easier, we will use Vagrant to build and run this container. If you are new to vagrant, go to this link get started - http://docs.vagrantup.com/v2/getting-started/index.html</p>
 <p>Here is the vagrant file to build an image from docker file, run the docker and forward the port 80 from vm to host on port 18080.</p>
-<p>{% highlight ruby linenos %}
-VAGRANTFILE<em>API</em>VERSION = "2"</p>
-<pre><code>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-config.vm.box = "hashicorp/precise64"
-
-config.vm.network "forwarded_port", guest: 80, host: 18080
-
-config.vm.provision "docker" do |d|
-  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
-  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
-end
-end
-</code></pre>
-<p>{% endhighlight %}</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>	VAGRANTFILE_API_VERSION = "2"
+</span><span class='line'>	Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+</span><span class='line'>  	config.vm.box = "hashicorp/precise64"
+</span><span class='line'>  	config.vm.network "forwarded_port", guest: 80, host: 18080
+</span><span class='line'>		config.vm.provision "docker" do |d|
+</span><span class='line'>		  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
+</span><span class='line'>		  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
+</span><span class='line'>		end
+</span><span class='line'>	end
+</span></code></pre></td></tr></table></div></figure>
 <p>Use <code>vagarnt up</code> to bring the vm up. It should install docker, build the docker image and use the same image to run the container.</p>
 <p>You can verify this by ssh into the vagrant box, <code>vagarnt ssh</code>, and list the docker container using <code>docker ps</code> and you should see a apache container running.</p>
 <p><img src="/assets/images/2014/Sep/docker.png" alt="Docker Screenshot" /></p>
