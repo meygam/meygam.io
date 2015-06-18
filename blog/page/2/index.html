@@ -89,556 +89,61 @@
             
             <div class="col-lg-12">
                 
-                <h2>Automating the Release of Java Artifacts using Jenkins on Windows
-                    <br>
-                    <small>February 05, 2014</small>
-                </h2>
-                <p><p>This post will show how to automate the release process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - upload the release artifacts to release repository. The job configured using this post must be run only after uploading the snapshot artifacts into the snapshot repository as explained in the earlier post <a href="http://meygam.github.io/blog/2014/01/13/jenkins-snapshot-upload/">Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows</a>. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
-<!-- more -->
-<ol>
-<li><h2>Generate SSH Keys for Github (without passphrase)</h2>
-<p>Jenkins does not support passphrases for SSH Keys and so generate the SSH Key for Gihub account without passphrase. Follow the directions given under <a href="https://help.github.com/articles/generating-ssh-keys">Generating SSH Keys</a>, generate a SSH Key without passphrase and upload to Github account.</p>
-</li>
-<li><h2>Force Jenkins to run as user with SSH Key</h2>
-<p>On Windows, Jenkins uses the SSH Key of the user it is running as, which is located under C:\Users<username>.ssh. Hence, Jenkins must be run as the user with 'username'.</p>
-</li>
-</ol>
-<p>Type 'services.msc' in a command prompt to open up Services Management. Right click on the Jenkins service and select Properties.</p>
-<p><img src="/assets/images/elizabetht/jenkins-services-properties.png" alt="Jenkins Services Management" title="Jenkins Services Management" /></p>
-<p>From the Jenkins Properties windows, navigate to Log on tab. Choose Log on as 'This account', enter the details of the account (use the Browse option to choose/check the name of the account) and click Ok. The account credentials will generally match the log in account for the Windows as shown in the snapshot below</p>
-<p><img src="/assets/images/elizabetht/jenkins-logon.png" alt="Jenkins Logon" title="Jenkins Logon" /></p>
-<p>Once the changes are saved, restart the Jenkins service from the Services Management by Right clicking on Jenkins service and choose Restart as shown below</p>
-<p><img src="/assets/images/elizabetht/jenkins-services-restart.png" alt="Jenkins Restart" title="Jenkins Restart" /></p>
-<ol>
-<li><h2>Install Plugins</h2>
-<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Manage Plugins as shown in the snapshot below.</p>
-</li>
-</ol>
-<p><img src="/assets/images/elizabetht/jenkins-manageplugins.png" alt="Jenkins Manage Plugins" title="Jenkins Manage Plugins" /></p>
-<p>Install the following plugins and restart Jenkins for the changes to take effect.</p>
-<ul>
-<li><p>Jenkins Release Plugin (for Maven release)</p>
-</li>
-<li><h2>Configure System</h2>
-<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Configure System as shown in the snapshot below.</p>
-</li>
-</ul>
-<p><img src="/assets/images/elizabetht/jenkins-configuresystem.png" alt="Jenkins Configure System" title="Jenkins Configure System" /></p>
-<p>Proceed to the Maven Release Plug-in section. Enable Nexus-Pro support, enter the Nexus URL, Nexus User Credentials and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-nexus-pro.png" alt="Jenkins Nexus-Pro" title="Jenkins Nexus-Pro" /><br  /></p>
-<ol>
-<li><h2>Create a New Jenkins Job</h2>
-<p>From the Jenkins Dashboard, click on "New Job" to create a new job. Enter a name for the job and choose "Build a maven2/3 project" as option and click on OK as shown below.</p>
-</li>
-</ol>
-<p><img src="/assets/images/elizabetht/jenkins-newjob.png" alt="Jenkins New Job" title="Jenkins New Job" /></p>
-<p>From the New Job Configuration screen, proceed to the Source Code Management section and specify the Git Repository URL for the project as shown below. From the additional behaviors section, click on "Add" and select Check out to specific local branch. Enter the branch name as master and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-sourcecodemgmt-release.png" alt="Jenkins Source Code Management for Release" title="Jenkins Source Code Management for Release" /></p>
-<p>Proceed to the Build Environment section, enable Maven Release Build option and enter the release goals.</p>
-<p><img src="/assets/images/elizabetht/jenkins-maven-releasebuild.png" alt="Jenkins Maven Release Build" title="Jenkins Maven Release Build" /></p>
-<p>Proceed to the Build section, enter the maven goals for building a snapshot as shown below and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-build.png" alt="Jenkins Build" title="Jenkins Build" /></p>
-<p>Proceed to the Build Settings section. Select the option for Email Notification and enter the values for the email recipients as shown below. Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-emailnotifications.png" alt="Jenkins Email Notifications" title="Jenkins Email Notifications" /></p>
-<ol>
-<li><h2>Configure settings.xml</h2>
-<p>In order to upload the built Maven artifacts to the artifactory server, configure the Jenkins settings.xml found in C:\Program Files (x86)\Jenkins\tools\hudson.tasks.Maven<em>MavenInstallation\Maven</em>3.1\conf folder with the same parameters as found in the default settings.xml (usually found under C:\Program Files\Apache Software Foundation\apache-maven-3.1.0\conf for a Windows machine) of the Maven installation on the system.</p>
-</li>
-</ol>
-<p>Typically, the server section for staging repository needs to be configured with httpHeaders in the settings.xml for the Maven Release.</p>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><servers>
-</span><span class='line'>    <server>
-</span><span class='line'>      <id>sonatype-nexus-staging</id>
-</span><span class='line'>      <username>username</username>
-</span><span class='line'>      <password>password</password>
-</span><span class='line'>	  <configuration>
-</span><span class='line'>      <httpHeaders>
-</span><span class='line'>        <property>
-</span><span class='line'>          <name>User-Agent</name>
-</span><span class='line'>          <value>Maven m2Release (java:${java.vm.version} ${env.BUILD_TAG }</value>
-</span><span class='line'>        </property>
-</span><span class='line'>      </httpHeaders>
-</span><span class='line'>      </configuration>
-</span><span class='line'>    </server>
-</span><span class='line'></servers>
-</span></code></pre></td></tr></table></div></figure>
-<p>Also, a profile section needs to be configured for the PGP Signature, the details of how to Generate PGP Signatures with Maven can be found from the section Generate a Key Pair at <a href="https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven">How to Generate PGP Signatures With Maven</a></p>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><profiles>
-</span><span class='line'>    <profile>
-</span><span class='line'>		<id>gpg-release</id>
-</span><span class='line'>		<properties>
-</span><span class='line'>			<gpg.passphrase>passphrase</gpg.passphrase>
-</span><span class='line'>			<gpg.useagent>true</gpg.useagent>
-</span><span class='line'>			<gpg.defaultKeyring>false</gpg.defaultKeyring>
-</span><span class='line'>			<gpg.homedir>C:/Users/Sara/AppData/Roaming/gnupg</gpg.homedir>
-</span><span class='line'>			<gpg.publicKeyring>C:/Users/Sara/AppData/Roaming/gnupg/pubring.gpg</gpg.publicKeyring>
-</span><span class='line'>			<gpg.secretKeyring>C:/Users/Sara/AppData/Roaming/gnupg/secring.gpg</gpg.secretKeyring>
-</span><span class='line'>		</properties>	
-</span><span class='line'>    </profile>
-</span><span class='line'></profiles>
-</span></code></pre></td></tr></table></div></figure>
-<ol>
-<li><h2>Update pom.xml</h2>
-<p>The pom.xml file for the project needs to be configured with the following plugins under the build section.</p>
-</li>
-<li><p>maven-enforcer-plugin</p>
-</li>
-<li><p>maven-release-plugin</p>
-</li>
-</ol>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>    <build>
-</span><span class='line'>	    <plugins>
-</span><span class='line'>			<plugin>
-</span><span class='line'>				<groupId>org.apache.maven.plugins</groupId>
-</span><span class='line'>				<artifactId>maven-enforcer-plugin</artifactId>
-</span><span class='line'>				<version>1.2</version>
-</span><span class='line'>				<executions>
-</span><span class='line'>					<execution>
-</span><span class='line'>						<id>enforce-maven</id>
-</span><span class='line'>						<goals>
-</span><span class='line'>							<goal>enforce</goal>
-</span><span class='line'>						</goals>
-</span><span class='line'>						<configuration>
-</span><span class='line'>							<rules>
-</span><span class='line'>								<requireMavenVersion>
-</span><span class='line'>									<version>(,2.1.0),(2.1.0,2.2.0),(2.2.0,)</version>
-</span><span class='line'>									<message>Maven 2.1.0 and 2.2.0 produce incorrect GPG signatures
-</span><span class='line'>										and checksums respectively.</message>
-</span><span class='line'>								</requireMavenVersion>
-</span><span class='line'>							</rules>
-</span><span class='line'>						</configuration>
-</span><span class='line'>					</execution>
-</span><span class='line'>				</executions>
-</span><span class='line'>			</plugin>
-</span><span class='line'>		</plugins>
-</span><span class='line'>
-</span><span class='line'>		<pluginManagement>
-</span><span class='line'>			<plugins>
-</span><span class='line'>				<plugin>
-</span><span class='line'>					<groupId>org.apache.maven.plugins</groupId>
-</span><span class='line'>					<artifactId>maven-release-plugin</artifactId>
-</span><span class='line'>					<version>2.4.2</version>
-</span><span class='line'>					<configuration>
-</span><span class='line'>						<tagBase>https://github.com/elizabetht/StudentEnrollmentWithREST/tags</tagBase>
-</span><span class='line'>						<mavenExecutorId>forked-path</mavenExecutorId>
-</span><span class='line'>						<useReleaseProfile>false</useReleaseProfile>
-</span><span class='line'>						<arguments>-Psonatype-oss-release</arguments>
-</span><span class='line'>					</configuration>
-</span><span class='line'>				</plugin>
-</span><span class='line'>			</plugins>
-</span><span class='line'>		</pluginManagement>
-</span><span class='line'>	</build>
-</span></code></pre></td></tr></table></div></figure>
-<p>Update the pom.xml with a profile section for the maven-gpg-plugin</p>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>    <profiles>
-</span><span class='line'>		<profile>
-</span><span class='line'>			<id>sign</id>
-</span><span class='line'>			<build>
-</span><span class='line'>				<plugins>
-</span><span class='line'>					<plugin>
-</span><span class='line'>						<groupId>org.apache.maven.plugins</groupId>
-</span><span class='line'>						<artifactId>maven-gpg-plugin</artifactId>
-</span><span class='line'>						<executions>
-</span><span class='line'>							<execution>
-</span><span class='line'>								<id>sign-artifacts</id>
-</span><span class='line'>								<phase>verify</phase>
-</span><span class='line'>								<goals>
-</span><span class='line'>									<goal>sign</goal>
-</span><span class='line'>								</goals>
-</span><span class='line'>							</execution>
-</span><span class='line'>						</executions>
-</span><span class='line'>					</plugin>
-</span><span class='line'>				</plugins>
-</span><span class='line'>			</build>
-</span><span class='line'>		</profile>
-</span><span class='line'>	</profiles>
-</span></code></pre></td></tr></table></div></figure>
-<p>Add a distribution management section to pom.xml to specify the snapshot and staging repository URLs.</p>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>    <distributionManagement>
-</span><span class='line'>		<repository>
-</span><span class='line'>			<id>sonatype-nexus-staging</id>
-</span><span class='line'>			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-</span><span class='line'>		</repository>
-</span><span class='line'>		<snapshotRepository>
-</span><span class='line'>			<id>sonatype-nexus-snapshots</id>
-</span><span class='line'>			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-</span><span class='line'>		</snapshotRepository>
-</span><span class='line'>	</distributionManagement>
-</span></code></pre></td></tr></table></div></figure>
-<ol>
-<li><h2>Build Now</h2>
-<p>Once the above configuration steps are complete, click on "Build Now" under the Jenkins -> Upload REST Release Artifacts (or the respective Job name) to build the project based on the configuration.</p>
-</li>
-</ol>
-<p>The console output has the detailed logs of what steps were initiated by the configuration and the outcome of the entire build. Verify that the build succeeds.</p>
-<ol>
-<li><h2>Perform Maven Release</h2>
-<p>Once the build succeeds and snapshots are uploaded to the snapshot repository, click on "Perform Maven Release" under Jenkins -> Upload REST Release Artifacts (or the respective Job name) to start the Maven Release process.</p>
-</li>
-</ol>
-<p>Verify that the Release version and the next Development Version are correct. Enable 'Specify custom SCM comment prefix' to enter a custom SCM Comment. Enable 'Specify custom SCM tag' to enter a custom SCM tag. Click on Schedule Maven Release Build.</p>
-<p><img src="/assets/images/elizabetht/jenkins-perform-maven-release.png" alt="Jenkins Perform Maven Release" title="Jenkins Perform Maven Release" /></p>
-<p>Once the release process succeeds, the staging repository will be uploaded with the release artifacts.</p>
-<p>Thus the entire process of performing the maven release of artifacts to the staging repository and triggering emails to the recipients can be automated with a click of a button through Jenkins. The staging repository can be taken then through the steps of Close (if its still open) and Release to complete the promotion of the artifacts.</p>
-</p>
-                <a href="/blog/posts/jenkins-release-upload/" class="btn btn-default btn-lg">Read More</a>
-                <hr>
-            </div>
-            
-            <div class="col-lg-12">
-                
-                <h2>Installing Oracle Java 7 and Tomcat 7 on Ubuntu 13
-                    <br>
-                    <small>January 17, 2014</small>
-                </h2>
-                <p><p>Setting up a new Ubuntu server with Java 7 &amp; Tomcat 7 seems to be trivial, but often I had to do it at my workplace and everytime I had to google it to do this. So I thought I will list down the steps in my blog.</p>
-<!-- more -->
-<h3>Install Oracle Java 7</h3>
-<p>Run the below commands to install Oracle Java 7 - steps followed from <a href="http://www.webupd8.org/2012/01/install-oracle-java-jdk-7-in-ubuntu-via.html" target="_blank">INSTALL ORACLE JAVA 7 IN UBUNTU VIA PPA REPOSITORY</a></p>
-<pre><code>sudo add-apt-repository ppa:webupd8team/java
-sudo apt-get update
-sudo apt-get install oracle-java7-installer
-</code></pre>
-<p>Check if the right version of java is installed</p>
-<pre><code>java -version
-
-java version "1.7.0_45"
-Java(TM) SE Runtime Environment (build 1.7.0_45-b06)
-Java HotSpot(TM) 64-Bit Server VM (build 20.45-b01, mixed mode)
-</code></pre>
-<p>Run the below command to set the Java environment variables</p>
-<pre><code>sudo apt-get install oracle-java7-set-default
-</code></pre>
-<h3>Install Unzip</h3>
-<p>Run the below command to install unzip, we need this to unzip the tomcat binaries.</p>
-<pre><code>sudo apt-get install unzip
-</code></pre>
-<h3>Install Tomcat 7</h3>
-<p>Download the latest tomcat from tomcat website &amp; unzip it. And give execute access to all .sh files. Start the tomcat manually.</p>
-<pre><code>cd /opt
-sudo wget http://www.webhostingjams.com/mirror/apache/tomcat/tomcat-7/v7.0.52/bin/apache-tomcat-7.0.52.zip
-sudo unzip apache-tomcat-7.0.52.zip
-sudo chmod +x /opt/apache-tomcat-7.0.52/bin/*.sh
-sudo /opt/apache-tomcat-7.0.52/bin/startup.sh
-</code></pre>
-<p>Check if the tomcat is running. The below command should return the tomcat default page.</p>
-<pre><code>curl http://localhost:8080
-</code></pre>
-<p>Note: I don't use tomcat7 from ubuntu repository as it some times screws up my Oracle Java installation and installs Open JDK.</p>
-</p>
-                <a href="/blog/posts/installing-oracle-java-7-and-tomcat-7-on-ubuntu-13/" class="btn btn-default btn-lg">Read More</a>
-                <hr>
-            </div>
-            
-            <div class="col-lg-12">
-                
                 <h2>WordPress on AWS
                     <br>
                     <small>January 17, 2014</small>
                 </h2>
                 <p><p>In this blog I am going to cover the step by step instructions to host your own WordPress blog in AWS. Hosting your own blog has some advantages, you can install any plugins/themes you want and publish any content you like. Having said that it’s not for everyone. If you are a basic user better you create account in wordpress.com. I wanted to run my own blog engine, primarily because I am a techie.</p>
-<!-- more -->
-<h3>Architecture for WordPress on AWS</h3>
-<p>At a minimum WordPress needs a web server, to serve your blog and a database instance, to store your blog contents. You can install both web server and the database instance in just one server. But for high availability and better backup mechanism I choose to keep the web server and database instance separate. Below is the architecture that we are going to follow. I will talk about each components in following sections.</p>
-<p><iframe src="http://www.slideshare.net/slideshow/embed_code/30109797" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe></p>
-<table>
-<tr>
-    <th>Service</th>
-    <th>Unit Rate</th>
-    <th>Quantity (Per Year)</th>
-    <th width="80px">Cost per Year</th>
-</tr>
-<tr>
-  <td>EC2 – Linux (t1.micro)</td>
-  <td>$0.02 per hour</td>
-  <td>365 days * 24 hours = 8760 hours</td>
-  <td>$175.20</td>
-</tr>
-<tr>
-  <td>EC2 – Data Transfer OUT From Amazon EC2 To Amazon Elastic Load Balancing</td>
-  <td>$0.01 per GB</td>
-  <td>1 GB per month * 12 month = 12 GB</td>
-  <td>$0.12</td>
-</tr>
-<tr>
-  <td>EC2 – Data Transfer IN To Amazon EC2 From Amazon RDS  Using a private IP address  </td>
-  <td>$0.00 per GB</td> 
-  <td>1 GB per month * 12 month = 12 GB</td>
-  <td>$0.00</td>
-</tr>
-<tr>
-  <td>EBS - Standard volumes</td>
-  <td>$0.10 per GB-month</td>
-  <td>8 GB * 12 month
-= 96 GB-month</td>
-  <td>$9.60</td>
-</tr>
-<tr>
-  <td>EBS - Standard volumes</td>
-  <td>$0.10 per 1 million I/O requests</td>
-  <td>1 million request per month * 12 month</td>
-  <td>$1.20</td>
-</tr>
-<tr>
-  <td>RDS – MySQL -
-Standard Deployment (db.t1.micro)</td>
-  <td>$0.025 per hour</td>
-  <td>365 days * 24 hours
-= 8760 hours</td>
-  <td>$219.00</td>
-</tr>
-<tr>
-  <td>RDS – MySQL - Standard Deployment Database Storage</td>
-  <td>$0.125 per GB-month</td>
-  <td>20 GB * 12 month
-= 240 GB-month</td>
-  <td>$30.00</td>
-</tr>
-<tr>
-  <td>ELB</td>
-  <td>$0.025 per hour</td>
-  <td>365 days * 24 hours
-= 8760 hours</td>
-  <td>$219.00</td>
-</tr>
-<tr>
-  <td>ELB – Data Transfer</td>
-  <td>$0.008 per GB of data processed by ELB</td>
-  <td>1 GB per month * 12 month = 12 GB</td>
-  <td>$0.10
-</td>
-</tr>
-<tr>
-<td>Route 53 - Hosted Zones</td>
-<td>$0.50 per hosted zone / month for the first 25 hosted zones
-$0.10 per hosted zone / month for additional hosted zones</td>
-<td>1 hosted zone * 12 month = 12 hosted zone month</td>
-<td>$6.00</td>
-</tr>
-<tr>
-<td>Route 53 -
-Standard Queries</td>
-<td>$0.500 per million queries – first 1 Billion queries / month
-$0.250 per million queries – over 1 Billion queries / month</td>
-<td>under 1 million queries per month
-* 12 month = 12 million quries</td>
-<td>$6.00</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td><strong>Total Cost Per Year (approx.)</strong></td>
-<td align="right"><strong>$666.22</strong></td>
-</tr>
-<tr>
-<td><strong> </strong></td>
-<td><strong> </strong></td>
-<td><strong>Total Cost Per Month <strong>(approx.)</strong></strong></td>
-<td><strong>$55.52</strong></td>
-</tr>
-</table>
-<p>My blog do not get lot of visits for now, so I went with less powerful machines and DB, to save cost. I can scale my blog when required, that’s the advantage of AWS. The current architecture allows scaling. I will cover more about scaling in next part.</p>
-<h3>Setup infrastructure in AWS</h3>
-<ul>
-<li>Create a VPC with the CIDR 10.0.0.0/16.
-<img src="http://farm4.staticflickr.com/3831/11989981795_b8780b74a8_b_d.jpg" alt="" /></li>
-<li>Create a private subnets under the new VPC. We need two subnets in different availability zones to setup RDS in a VPC.
-<img src="http://farm6.staticflickr.com/5547/12023870814_0df096e40a_b_d.jpg" alt="" /></li>
-<li>Create an internet gateway and attach it to the VPC.
-<img src="http://farm4.staticflickr.com/3732/12023835684_beebf39e90_b_d.jpg" alt="" /></li>
-<li>Add internet gateway to the route table and attach it to the subnet.
-<img src="http://farm8.staticflickr.com/7452/12023771363_854f9efc68_b_d.jpg" alt="" /></li>
-<li>Create a DB Subnet group with minimum two subnets each in different availability zones.
-<img src="http://farm6.staticflickr.com/5472/12023771423_9b337e66b5_b_d.jpg" alt="" /></li>
-<li>Create an MySQL RDS instance inside the VPC, so that only the instances in the same network can connect to it.
-<img src="http://farm6.staticflickr.com/5535/12023836124_690f1f14d6_b_d.jpg" alt="" /></li>
-<li>Create an Ubuntu EC2 instance inside the VPC without any public IP, and attach it to the elastic IP, so that I can ssh into the machine.
-<img src="http://farm4.staticflickr.com/3720/12024318096_9fdcc9f651_b_d.jpg" alt="" /></li>
-</ul>
-<h3>Install php5</h3>
-<p>Now that EC2 is up and running, ssh into the machine using the private key using the command</p>
-<pre><code>ssh -i &lt;&lt;private-key.pem&gt;&gt; ubuntu@&lt;&lt;elastic ip&gt;&gt;
-</code></pre>
-<p>once you are in the machine, run</p>
-<pre><code>sudo apt-get update
-</code></pre>
-<p>to update the package list. Then install the php5, php5 fpm and php5 mysql packages using the below command</p>
-<pre><code>sudo apt-get install php5
-sudo apt-get insatll php-fpm
-sudo apt-get install php5-mysql
-</code></pre>
-<h3>Install WordPress</h3>
-<p>Download and extract the WordPress using the below commands.</p>
-<pre><code>mkdir -p /var/www/blog.meygam.com/htdocs/ /var/www/blog.meygam.com/logs/
-cd /var/www/blog.meygam.com/htdocs/
-wget http://wordpress.org/latest.tar.gz
-tar –strip-components=1 -xvf latest.tar.gz
-rm latest.tar.gz
-chown -R www-data:www-data /var/www/blog.meygam.com/
-</code></pre>
-<h3>Install &amp; configure nginx</h3>
-<p>By default Ubuntu comes with Apache2. I like to use nginx, as its more modern than Apache2. So first we need to uninstall the Apache2 &amp; all of its dependencies using the below command.</p>
-<pre><code>sudo apt-get remove apache2*
-</code></pre>
-<p>Install nginx using the below command.</p>
-<pre><code>sudo apt-get install nginx
-</code></pre>
-<p>Create the website configuration</p>
-<pre><code>vi /etc/nginx/sites-available/blog.meygam.com
-</code></pre>
-<p>and add the below configuration in the file. Replace blog.meygam.com to your site name.</p>
-<pre><code>server {
-
-server_name blog.meygam.com;
-
-access_log /var/log/nginx/blog.meygam.com.access.log;
-error_log /var/log/nginx/blog.meygam.com.error.log;
-
-root /var/www/blog.meygam.com/htdocs;
-index index.php;
-
-location / {
-
-try_files $uri $uri/ /index.php?$args;
-
-}
-
-location ~ \.php$ {
-
-try_files $uri =404;
-include fastcgi_params;
-fastcgi_pass unix:/var/run/php5-fpm.sock;
-
-}
-
-}
-</code></pre>
-<p>Restart the nginx to load the configuration</p>
-<pre><code>sudo service nginx restart
-</code></pre>
-<h3>Configure Load Balancer</h3>
-<p>Configure Elastic load balancer (ELB) attach the EC2 instance that we created to it. Using ELB will let you scale the application later point.</p>
-<p><img src="http://farm4.staticflickr.com/3685/12024782696_02458889fc_b_d.jpg" alt="" /></p>
-<p><img src="http://farm8.staticflickr.com/7349/12024303824_703f47f09a_b_d.jpg" alt="" /></p>
-<p><img src="http://farm8.staticflickr.com/7438/12024782816_f152481a0c_b_d.jpg" alt="" /></p>
-<p><img src="http://farm4.staticflickr.com/3686/12024236493_d63f2c8e01_b_d.jpg" alt="" /></p>
-<h3>Configure Route 53</h3>
-<p>Route 53 helps to map your domain name to the elastic load balancer. Create a hosted zone for your domain, and add the Route 53 name servers to your domain register.</p>
-<p><img src="http://farm4.staticflickr.com/3806/12024318566_f502004ed4_b_d.jpg" alt="" /></p>
-<p>Add a CNAME record to point to your ELB.
-<img src="http://farm3.staticflickr.com/2823/12023772813_a2a59d99fa_b_d.jpg" alt="" /></p>
-<h3>Configure WordPress</h3>
-<p>Now access your website in the browser, and you should see the WordPress configuration page. Follow the instructions and point it to the database that we created.</p>
-<p><img src="http://farm6.staticflickr.com/5511/12024553674_1d1230de93_b_d.jpg" alt="" /></p>
-<p><img src="http://farm8.staticflickr.com/7415/12024196015_b966e2ee75_b_d.jpg" alt="" /></p>
-<p><img src="http://farm4.staticflickr.com/3769/12024553914_8e8b023647_b_d.jpg" alt="" /></p>
-<p><img src="http://farm6.staticflickr.com/5540/12025035976_f9738840b3_b_d.jpg" alt="" /></p>
-<p><img src="http://farm6.staticflickr.com/5534/12024554344_e2b70a17af_b_d.jpg" alt="" /></p>
-<p>And that’s it, your blog is fully up &amp; running on AWS now! Happy Blogging!</p>
 </p>
                 <a href="/blog/posts/wordpress-on-aws/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows
+                    <br>
+                    <small>January 13, 2014</small>
+                </h2>
+                <p><p>This post will show how to automate the deployment process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - to build the project, run the unit tests, upload the built artifacts to a Sonatype Snapshot repository, run the Cobertura Code Coverage reports and deploy the application to the Amazon EC2. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+</p>
+                <a href="/blog/posts/jenkins-snapshot-upload/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Building Jersey2 REST Client Using Spring with JUnit and JMock
+                    <br>
+                    <small>December 23, 2013</small>
+                </h2>
+                <p><p>This post will show how to create a Jersey2 REST Client in a Spring environment and test the same using JUnit and JMock frameworks. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+</p>
+                <a href="/blog/posts/jersey2-rest-client-with-junit-and-jmock/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Building Java Web Application Using Jersey2 REST with Spring
+                    <br>
+                    <small>December 13, 2013</small>
+                </h2>
+                <p><p>This post will show how to create a Student Enrollment Application using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment. This is a simple application that aims to collect the input details from the user during signup, save the details in the MYSQL DB and authenticate the same during login.</p>
+</p>
+                <a href="/blog/posts/student-enrollment-using-jersey-rest-with-spring/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Building Java Web Application Using Hibernate with Spring
+                    <br>
+                    <small>November 21, 2013</small>
+                </h2>
+                <p><p>This post will show how to create a Student Enrollment Application using MYSQL DB with Hibernate ORM in a Spring environment. This is a simple application that aims to collect the input details from the user during signup, save the details in the MYSQL DB and authenticate the same during login.</p>
+</p>
+                <a href="/blog/posts/student-enrollment-using-hibernate-with-spring/" class="btn btn-default btn-lg">Read More</a>
                 <hr>
             </div>
             

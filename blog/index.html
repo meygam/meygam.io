@@ -89,6 +89,8 @@
             
             <div class="col-lg-12">
                 
+                    <img class="img-responsive img-border img-full" src="/assets/images/2014/Sep/docker-logo.png" alt="">
+                
                 <h2>Provisioning an Apache Server With Dockers And Vagrant
                     <br>
                     <small>September 11, 2014</small>
@@ -101,6 +103,8 @@
             
             <div class="col-lg-12">
                 
+                    <img class="img-responsive img-border img-full" src="/assets/images/2014/Mar/openvpn-ios.png" alt="">
+                
                 <h2>Connecting to Open VPN server from iOS device
                     <br>
                     <small>March 13, 2014</small>
@@ -112,40 +116,6 @@
 <li>Client Certificate</li>
 <li>CA Certificate (if its self signed)</li>
 </ul>
-<!-- more -->
-<h3>Install Open VPN app</h3>
-<p>Install Open VPN client from app store (https://itunes.apple.com/app/openvpn-connect/id590379981)</p>
-<p><img src="/assets/images/2014/Mar/20140313_174551000_iOS.jpg" alt="" /></p>
-<h3>Import Open VPN settings</h3>
-<p>Get the Open VPN settings file, clinet.ovpn, from your VPN admin. Send that file to your iOS device through email, and open it in Open VPN app on the iOS device.</p>
-<p><img src="/assets/images/2014/Mar/20140313_175334000_iOS.jpg" alt="" /></p>
-<p>Click on the green plus sign to import the profile to iOS device.</p>
-<p>{<3>}<img src="/assets/images/2014/Mar/20140313_180407000_iOS.jpg" alt="" /></p>
-<p>Once imported it should like below</p>
-<p><img src="/assets/images/2014/Mar/20140313_180416000_iOS.jpg" alt="" /></p>
-<h3>Install Client Certificate</h3>
-<p>Get the client certificate in .p12 format from your Open VPN admin. Send that also to your iOS device through email, and install it.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180433000_iOS-1.jpg" alt="" /></p>
-<pre><code>Note: You need your Client certificate with password protected. iOS doesn't allow to import certificate with blank password.
-</code></pre>
-<p><img src="/assets/images/2014/Mar/20140313_180452000_iOS.jpg" alt="" /></p>
-<p>You should see a successfully installed message</p>
-<p><img src="/assets/images/2014/Mar/20140313_180504000_iOS.jpg" alt="" /></p>
-<p>If it say "Not Trusted" as shown in my certificate above, then you will have to install the CA certificate. Else, when you try to connect Open VPN you will get the below error</p>
-<pre><code>2014-03-13 10:59:29 EVENT: CORE_ERROR PolarSSL: ca certificate is undefined [ERR]
-</code></pre>
-<h3>Install CA Certificate</h3>
-<p>Get the CA certificate from VPN admin. it should be in the form of .pem file. Send that to your iOS device through email, and install it.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180531000_iOS.jpg" alt="" /></p>
-<p>Install the root CA certificate.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180534000_iOS.jpg" alt="" /></p>
-<p>Once installed you should see that Certificate Authority is "Trusted"</p>
-<p><img src="/assets/images/2014/Mar/20140313_180547000_iOS.jpg" alt="" /></p>
-<h3>Connect to Open VPN server</h3>
-<p>Open "Open VPN" app in your iOS device, select the <code>None Selected</code> list and select your certificate.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180601000_iOS.jpg" alt="" /></p>
-<p>Now turn on the VPN button and you should get connected to Open VPN server successfully.</p>
-<p><img src="/assets/images/2014/Mar/20140313_180641000_iOS.jpg" alt="" /></p>
 </p>
                 <a href="/blog/posts/connecting-to-open-vpn-server-from-ios-device/" class="btn btn-default btn-lg">Read More</a>
                 <hr>
@@ -158,123 +128,32 @@
                     <small>March 01, 2014</small>
                 </h2>
                 <p><p>This post will show how to automate the deployment process of a Android Application using Jenkins Continuous Integration - to build the project, run the unit tests (if any), archive the built artifacts and run the Android lint reports.</p>
-<!-- more -->
-<ol>
-<li><h2>Install Jenkins as a Windows Service</h2>
-<p>Navigate to jenkins-ci.org website using an Internet browser and download the Windows native package (the link is underlined for easy identification) as shown from the right side pane of the Download Jenkins tab.</p>
-</li>
-</ol>
-<p><img src="/assets/images/elizabetht/jenkins-installation.png" alt="Jenkins Installation package" title="Jenkins Installation Package" /></p>
-<p>Once the download is complete, uncompress the zip file and click on the jenkins-1.xxx.msi file. Proceed through the configuration steps to install the Jenkins as a Windows service.</p>
-<ol>
-<li><h2>Modify Default Jenkins Port</h2>
-<p>By default Jenkins runs on the port 8080. In order to avoid conflict with other applications, the default port can be modified by editing the jenkins.xml found under C:\Program Files (x86)\Jenkins location. As shown below, modify the httpPort to 8082.</p>
-</li>
-</ol>
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><service>
-</span><span class='line'>  <id>jenkins</id>
-</span><span class='line'>  <name>Jenkins</name>
-</span><span class='line'>  <description>This service runs Jenkins continuous integration system.</description>
-</span><span class='line'>  <env name="JENKINS_HOME" value="%BASE%"/>
-</span><span class='line'>  <!--
-</span><span class='line'>    if you'd like to run Jenkins with a specific version of Java, specify a full path to java.exe.
-</span><span class='line'>    The following value assumes that you have java in your PATH.
-</span><span class='line'>  -->
-</span><span class='line'>  <executable>%BASE%\jre\bin\java</executable>
-</span><span class='line'>  <arguments>-Xrs -Xmx256m -Dhudson.lifecycle=hudson.lifecycle.WindowsServiceLifecycle -jar "%BASE%\jenkins.war" --httpPort=8082</arguments>
-</span><span class='line'>  <!--
-</span><span class='line'>    interactive flag causes the empty black Java window to be displayed.
-</span><span class='line'>    I'm still debugging this.
-</span><span class='line'>  <interactive />
-</span><span class='line'>  -->
-</span><span class='line'>  <logmode>rotate</logmode>
-</span><span class='line'>
-</span><span class='line'>  <onfailure action="restart" />
-</span><span class='line'></service>
-</span></code></pre></td></tr></table></div></figure>
-<p>Once the modification is saved in jenkins.xml file, restart the Jenkins service from the Windows Task Manager->Services and right clicking on the Jenkins service and choose Stop Service to stop the service as shown below.</p>
-<p><img src="/assets/images/elizabetht/jenkins-stop.png" alt="Jenkins Stop Service" title="Jenkins Stop Service" /></p>
-<p>Once the status of the service changes to stopped, restart the service by right clicking on the Jenkins service and choose Start Service to start the service again.</p>
-<p><img src="/assets/images/elizabetht/jenkins-restart.png" alt="Jenkins Restart Service" title="Jenkins Restart Service" /></p>
-<p>Navigate to localhost:8082 to verify if the Jenkins restart was successful as shown below - Jenkins Dashboard will be displayed. Note that it takes a while before the Jenkins service becomes available.</p>
-<p><img src="/assets/images/elizabetht/jenkins-dashboard.png" alt="Jenkins Dashboard" title="Jenkins Dashboard" /></p>
-<ol>
-<li><h2>Install Plugins</h2>
-<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Manage Plugins as shown in the snapshot below.</p>
-</li>
-</ol>
-<p><img src="/assets/images/elizabetht/jenkins-manageplugins.png" alt="Jenkins Manage Plugins" title="Jenkins Manage Plugins" /></p>
-<p>Install the following plugins and restart Jenkins for the changes to take effect.</p>
-<ul>
-<li><p>Git Plugin (for integrating Git with Jenkins)</p>
-</li>
-<li><p>Gradle Plugin (for integrating Gradle with Jenkins)</p>
-</li>
-<li><p>Android Lint Plugin (for integration Lint with Jenkins)</p>
-</li>
-<li><h2>Configure System</h2>
-<p>On the Jenkins Dashboard, navigate to Manage Jenkins -> Configure System as shown in the snapshot below.</p>
-</li>
-</ul>
-<p><img src="/assets/images/elizabetht/jenkins-configuresystem.png" alt="Jenkins Configure System" title="Jenkins Configure System" /></p>
-<p>Navigate to the Global Properties section and click on Add to add an Environment Variable ANDROID<em>HOME as shown in the snapshot below. Enter the name as ANDROID</em>HOME and enter the path of the location where the Android SDK is stored on windows.</p>
-<p><img src="/assets/images/elizabetht/androidhome.png" alt="Jenkins Android Home Configuration" title="Jenkins Android Home Configuration" /></p>
-<p>Navigate to the JDK section and click on "Add JDK" to add the JDK installation as shown in the snapshot below. Specify a JDK Name, choose the JDK Version to install and follow the on-screen instructions to save the Oracle Login credentials. Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-java.png" alt="Jenkins Java Installation" title="Jenkins Java Installation" /></p>
-<p>Next, proceed to the Git section and click on "Add Git" to add the Git installation as shown in the snapshot below. Specify Git Name, specify the path to Git executable and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/jenkins-gitinstall.png" alt="Jenkins Git Installation" title="Jenkins Git Installation" /></p>
-<p>Next, proceed to the Gradle section and click on "Add Gradle" to add the Gradle installation as shown in the snapshot below. Specify Gradle Name, choose the appropriate version (at the time of writing, I used Gradle 1.10) and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/gradleinstall.png" alt="Jenkins Gradle Installation" title="Jenkins Gradle Installation" /></p>
-<p>Next, proceed to the Email Notification section and enter the SMTP Server details as shown below. Click on the Advanced button to add the further details required and Save the changes. Click on "Test configuration by sending test e-mail", enter the test e-mail recipient and click on "Test configuration" to see if the email is successfully sent.</p>
-<p><img src="/assets/images/elizabetht/jenkins-email.png" alt="Jenkins Email Notification" title="Jenkins Email Notification" /></p>
-<ol>
-<li><h2>Create a New Jenkins Job</h2>
-<p>From the Jenkins Dashboard, click on "New Job" to create a new job. Enter a name for the job and choose "Build a free-style software project" as option and click on OK as shown below.</p>
-</li>
-</ol>
-<p><img src="/assets/images/elizabetht/android-newjob.png" alt="Jenkins Android New Job" title="Jenkins Android New Job" /></p>
-<p>From the New Job Configuration screen, proceed to the Source Code Management section. Save the Git credentials by clicking on "Add" as shown below and entering the details in the following dialog. Save the changes by clicking on "Add" as shown below.</p>
-<p><img src="/assets/images/elizabetht/android-add-credentials.png" alt="Jenkins Android Add Credentials" title="Jenkins Android Add Credentials" /></p>
-<p>Specify the Git Repository URL for the project, choose the saved credentials from the drop-down list as shown in the snapshot below. Save the changes.</p>
-<p><img src="/assets/images/elizabetht/android-sourcecodemgmt.png" alt="Jenkins Source Code Management" title="Jenkins Source Code Management" /></p>
-<p>Next, from the Build Triggers section, select the options desired as shown below and Save the changes.</p>
-<p><img src="/assets/images/elizabetht/android-build-triggers.png" alt="Android Build Triggers" title="Android Build Triggers" /></p>
-<p>Proceed to the Build section, choose "Invoke Gradle script" from the drop-down list of choices for "Add build step". Choose the appropriate Gradle version which is configured, enter the tasks to be built and select the options as desired. Save the changes.</p>
-<p><img src="/assets/images/elizabetht/android-build.png" alt="Android Build" title="Android Build" /></p>
-<p>Proceed to the Post-build Actions section, click on "Publish Android Lint results" from the drop-down list of choices for "Add post-build action" and specify the location where the Lint results should be stored in the Jenkins workspace for the job.</p>
-<p>Similarly, click on "Archive the artifacts" from the drop-down list of choices for "Add post-build action" and the specify the format of APK files to be archived after every build. Additionally, options from Advanced section such as "Discard all but the last successful/stable artifact to save disk space" could be enabled for saving disk space.</p>
-<p>Click on "E-mail Notification" from the drop-down list of choices for "Add post-build action" and enter the values for the email recipients as shown below. Save the changes.</p>
-<p><img src="/assets/images/elizabetht/android-post-build.png" alt="Android Post Build" title="Android Post Build" /></p>
-<ol>
-<li><h2>Build Now</h2>
-<p>Once the above configuration steps are complete, click on "Build Now" under the Jenkins -> Build Android Application (or the respective Job name) to build the project based on the configuration.</p>
-</li>
-</ol>
-<p>The console output has the detailed logs of what steps were initiated by the configuration and the outcome of the entire build. Clicking on any successful build outcome shows the artifacts that were archived as part of the build, the change that started the build and the lint results as shown below.</p>
-<p><img src="/assets/images/elizabetht/android-build-outcome.png" alt="Android Build Outcome" title="Android Build Outcome" /></p>
-<p>Thus the entire process of building the project an Android application project whenever a SCM change is triggered or under another condition, running lint reports, archiving the artifacts built, publishing lint reports and triggering emails to the recipients can be automated with a click of a button through Jenkins.</p>
 </p>
                 <a href="/blog/posts/jenkins-android/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Automating the Release of Java Artifacts using Jenkins on Windows
+                    <br>
+                    <small>February 05, 2014</small>
+                </h2>
+                <p><p>This post will show how to automate the release process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - upload the release artifacts to release repository. The job configured using this post must be run only after uploading the snapshot artifacts into the snapshot repository as explained in the earlier post <a href="http://meygam.github.io/blog/2014/01/13/jenkins-snapshot-upload/">Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows</a>. The details of the actual application are explained in the earlier post given by the link <a href="http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/">Building Java Web Application Using Jersey REST With Spring</a>.</p>
+</p>
+                <a href="/blog/posts/jenkins-release-upload/" class="btn btn-default btn-lg">Read More</a>
+                <hr>
+            </div>
+            
+            <div class="col-lg-12">
+                
+                <h2>Installing Oracle Java 7 and Tomcat 7 on Ubuntu 13
+                    <br>
+                    <small>January 17, 2014</small>
+                </h2>
+                <p><p>Setting up a new Ubuntu server with Java 7 &amp; Tomcat 7 seems to be trivial, but often I had to do it at my workplace and everytime I had to google it to do this. So I thought I will list down the steps in my blog.</p>
+</p>
+                <a href="/blog/posts/installing-oracle-java-7-and-tomcat-7-on-ubuntu-13/" class="btn btn-default btn-lg">Read More</a>
                 <hr>
             </div>
             
