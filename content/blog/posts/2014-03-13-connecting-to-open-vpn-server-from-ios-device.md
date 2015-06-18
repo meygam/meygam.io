@@ -1,7 +1,8 @@
 ---
 layout: post
-title:  "Connecting to Open VPN server from iOS device"
-date:   2014-03-13 12:00
+title: "Connecting to Open VPN server from iOS device"
+date: 2014-03-13 12:00
+image: /assets/images/2014/Mar/openvpn-ios.png
 published: true
 ---
 To connect iOS device to Open VPN server we need
@@ -11,7 +12,7 @@ To connect iOS device to Open VPN server we need
 * Client Certificate
 * CA Certificate (if its self signed)
 
-<!-- more -->
+<!--more-->
 
 
 ###Install Open VPN app
@@ -24,28 +25,28 @@ Install Open VPN client from app store (https://itunes.apple.com/app/openvpn-con
 ###Import Open VPN settings
 Get the Open VPN settings file, clinet.ovpn, from your VPN admin. Send that file to your iOS device through email, and open it in Open VPN app on the iOS device.
 
-![](/assets/images/2014/Mar/20140313_175334000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_175334000_iOS.jpg =320x)
 
 Click on the green plus sign to import the profile to iOS device.
 
-{<3>}![](/assets/images/2014/Mar/20140313_180407000_iOS.jpg)
+{<3>}![](/assets/images/2014/Mar/20140313_180407000_iOS.jpg =320x)
 
 Once imported it should like below
 
-![](/assets/images/2014/Mar/20140313_180416000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180416000_iOS.jpg =320x)
 
 ###Install Client Certificate
 Get the client certificate in .p12 format from your Open VPN admin. Send that also to your iOS device through email, and install it.
 
-![](/assets/images/2014/Mar/20140313_180433000_iOS-1.jpg)
+![](/assets/images/2014/Mar/20140313_180433000_iOS-1.jpg =320x)
 
 	Note: You need your Client certificate with password protected. iOS doesn't allow to import certificate with blank password.
     
-![](/assets/images/2014/Mar/20140313_180452000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180452000_iOS.jpg =320x)
 
 You should see a successfully installed message
 
-![](/assets/images/2014/Mar/20140313_180504000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180504000_iOS.jpg =320x)
 
 If it say "Not Trusted" as shown in my certificate above, then you will have to install the CA certificate. Else, when you try to connect Open VPN you will get the below error
 
@@ -54,22 +55,22 @@ If it say "Not Trusted" as shown in my certificate above, then you will have to 
 ###Install CA Certificate
 Get the CA certificate from VPN admin. it should be in the form of .pem file. Send that to your iOS device through email, and install it.
 
-![](/assets/images/2014/Mar/20140313_180531000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180531000_iOS.jpg =320x)
 
 Install the root CA certificate. 
 
-![](/assets/images/2014/Mar/20140313_180534000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180534000_iOS.jpg =320x)
 
 Once installed you should see that Certificate Authority is "Trusted"
 
-![](/assets/images/2014/Mar/20140313_180547000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180547000_iOS.jpg =320x)
 
 ###Connect to Open VPN server
 
 Open "Open VPN" app in your iOS device, select the `None Selected` list and select your certificate.
 
-![](/assets/images/2014/Mar/20140313_180601000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180601000_iOS.jpg =320x)
 
 Now turn on the VPN button and you should get connected to Open VPN server successfully.
 
-![](/assets/images/2014/Mar/20140313_180641000_iOS.jpg)
+![](/assets/images/2014/Mar/20140313_180641000_iOS.jpg =320x)

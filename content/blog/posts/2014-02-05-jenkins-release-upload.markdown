@@ -6,7 +6,7 @@ published: true
 ---
 This post will show how to automate the release process of a Java Web Application (Student Enrollment Application developed using MYSQL DB with Hibernate ORM in a REST based Jersey2 Spring environment) using Jenkins Continuous Integration - upload the release artifacts to release repository. The job configured using this post must be run only after uploading the snapshot artifacts into the snapshot repository as explained in the earlier post [Automating the Deployment and Upload of Snapshot Java Artifacts using Jenkins on Windows](http://meygam.github.io/blog/2014/01/13/jenkins-snapshot-upload/). The details of the actual application are explained in the earlier post given by the link [Building Java Web Application Using Jersey REST With Spring](http://meygam.github.io/blog/2013/12/13/student-enrollment-using-jersey-rest-with-spring/).
 
-<!-- more -->
+<!--more-->
 
 1. Generate SSH Keys for Github (without passphrase)
 ----------------------------------------------------

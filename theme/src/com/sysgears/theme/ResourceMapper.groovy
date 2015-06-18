@@ -43,7 +43,7 @@ class ResourceMapper {
             }
             switch (page.url) {
                 case '/blog/':
-                    applyPagination(posts, 3, page.url)
+                    applyPagination(posts, 5, page.url)
                     break
                 case ~/${site.posts_base_url}.*/:
                     def post = posts.find { it.url == page.url }

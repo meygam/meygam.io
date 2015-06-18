@@ -6,7 +6,7 @@ published: true
 ---
 This post will show how to create a Student Enrollment Application using MYSQL DB with JDBC. This is a simple application that aims to collect the input details from the user during signup, save the details in the MYSQL DB and authenticate the same during login.
 
-<!-- more -->
+<!--more-->
 
 1. Create Java Web Application Project
 --------------------------------------

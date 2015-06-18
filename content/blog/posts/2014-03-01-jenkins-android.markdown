@@ -6,7 +6,7 @@ published: true
 ---
 This post will show how to automate the deployment process of a Android Application using Jenkins Continuous Integration - to build the project, run the unit tests (if any), archive the built artifacts and run the Android lint reports. 
 
-<!-- more -->
+<!--more-->
 
 1. Install Jenkins as a Windows Service
 ---------------------------------------
