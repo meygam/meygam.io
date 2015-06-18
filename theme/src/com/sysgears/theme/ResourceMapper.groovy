@@ -1,7 +1,6 @@
 package com.sysgears.theme
 
 import com.sysgears.grain.taglib.Site
-import com.sysgears.theme.pagination.Paginator
 
 /**
  * Change pages urls and extend models.
@@ -23,69 +22,10 @@ class ResourceMapper {
     def map = { resources ->
 
         def refinedResources = resources.findResults(filterPublished).collect { Map resource ->
-            customizeUrls <<
-                fillDates <<
-                resource
-        }.sort { -it.date.time }
-
-        customizeModels << refinedResources
-    }
-
-    /**
-     * Customizes pages models, applies pagination (creates new pages)
-     */
-    private def customizeModels = { List resources ->
-        def posts = resources.findAll { it.layout == 'post' }
-
-        resources.inject([]) { List updatedResources, Map page ->
-            def applyPagination = { items, perPage, url, model = [:] ->
-                updatedResources += Paginator.paginate(items, 'posts', perPage, url, page + model)
-            }
-            switch (page.url) {
-                case '/blog/':
-                    applyPagination(posts, 5, page.url)
-                    break
-                case ~/${site.posts_base_url}.*/:
-                    def post = posts.find { it.url == page.url }
-                    def index = posts.indexOf(post)
-                    def prev = index > 0 ? posts[index - 1] : null
-                    def next = posts[index + 1]
-                    updatedResources << (page + [prev_post: prev, next_post: next])
-                    break
-                default:
-                    updatedResources << page
-            }
-
-            updatedResources
-        }
-    }
-
-    /**
-     * Customize site post URLs
-     */
-    private def customizeUrls = { Map resource ->
-        String location = resource.location
-        def update = [:]
-
-        switch (location) {
-            case ~/\/blog\/posts\/.*/:
-                update.url = getPostUrl(site.posts_base_url, location)
-                break
+            fillDates << resource
         }
 
-        resource + update
-    }
-
-    /**
-     * Creates url for page. Cuts date and extension from the file name '2013-01-01-file-name.markdown'.
-     *
-     * @param basePath base path to the page
-     * @param location location of the file
-     *
-     * @return formatted url to the page.
-     */
-    private static String getPostUrl(String basePath, String location) {
-        basePath + location.substring(location.lastIndexOf('/') + 12, location.lastIndexOf('.')) + '/'
+        refinedResources
     }
 
     /**

@@ -6,11 +6,9 @@ import com.sysgears.theme.taglib.ThemeTagLib
 resource_mapper = new ResourceMapper(site).map
 tag_libs = [ThemeTagLib]
 
-excludes += ['/_[^/]*/.*'] // excludes directories that start from '_'
-
 features {
-    highlight = 'none' // 'none', 'pygments'
-    compass = 'none'
+    highlight = 'pygments' // 'none', 'pygments'
+    compass = 'none'       // 'none', 'default'
     markdown = 'txtmark'   // 'txtmark', 'pegdown'
 }
 
@@ -51,11 +49,11 @@ ruby {
     //ruby_gems = '2.2.2'
 }
 
-// Site configuration.
-posts_base_url = '/blog/posts/' // the base url for blog entries
-
 // Deployment settings.
-gh_pages_url = 'git@github.com:meygam/meygam.io.git' // path to GitHub repository in format git@github.com:{username}/{repo}.git
+s3_bucket = '' // your S3 bucket name
+deploy_s3 = "s3cmd sync --acl-public --reduced-redundancy ${destination_dir}/ s3://${s3_bucket}/"
+
+gh_pages_url = '' // path to GitHub repository in format git@github.com:{username}/{repo}.git
 deploy = new GHPagesDeployer(site).deploy
 
 // Custom commands-line commands.
@@ -70,33 +68,9 @@ commands = [
         file = new File(content_dir, location)
         file.parentFile.mkdirs()
         file.exists() || file.write("""---
-layout: site
+layout: default
 title: "${pageTitle}"
 published: true
 ---
-""")},
-/*
- * Creates new post.
- *
- * title - new post title
- */
-'create-post': { String postTitle ->
-            def date = new Date()
-            def fileDate = date.format("yyyy-MM-dd")
-            def filename = fileDate + "-" + postTitle.encodeAsSlug() + ".markdown"
-            def blogDir = new File(content_dir + "${posts_base_url}")
-            if (!blogDir.exists()) {
-                blogDir.mkdirs()
-            }
-            def file = new File(blogDir, filename)
-
-            file.exists() || file.write("""---
-layout: post
-title: "${postTitle}"
-image:
-date: "${date.format(datetime_format)}"
-published: true
----
-""")},
-
+""")}
 ]
