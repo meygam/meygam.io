@@ -102,12 +102,12 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>	FROM    ubuntu:14.04
-</span><span class='line'>	MAINTAINER Saravana Kumar Periyasamy <saravanakumar.periyasamy@gmail.com>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>FROM    ubuntu:14.04
+</span><span class='line'>MAINTAINER Saravana Kumar Periyasamy <saravanakumar.periyasamy@gmail.com>
 </span><span class='line'>
-</span><span class='line'>	RUN     apt-get update
-</span><span class='line'>	RUN     apt-get install -y apache2
-</span><span class='line'>	CMD     service apache2 start && tail -f 	/var/log/apache2/error.log
+</span><span class='line'>RUN     apt-get update
+</span><span class='line'>RUN     apt-get install -y apache2
+</span><span class='line'>CMD     service apache2 start && tail -f 	/var/log/apache2/error.log
 </span></code></pre></td></tr></table></div></figure>
 <p>Line#1: takes the base image ubuntu, tag 14.04.
 Line#2: is the maintainers meta data for this new docker image.
@@ -125,15 +125,15 @@ Line#5: Starts Apache and tails the apache logs. This will be the default comman
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>	VAGRANTFILE_API_VERSION = "2"
-</span><span class='line'>	Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-</span><span class='line'>  	config.vm.box = "hashicorp/precise64"
-</span><span class='line'>  	config.vm.network "forwarded_port", guest: 80, host: 18080
-</span><span class='line'>		config.vm.provision "docker" do |d|
-</span><span class='line'>		  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
-</span><span class='line'>		  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
-</span><span class='line'>		end
+</pre></td><td class='code'><pre><code class='html'><span class='line'>VAGRANTFILE_API_VERSION = "2"
+</span><span class='line'>Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+</span><span class='line'>config.vm.box = "hashicorp/precise64"
+</span><span class='line'>config.vm.network "forwarded_port", guest: 80, host: 18080
+</span><span class='line'>	config.vm.provision "docker" do |d|
+</span><span class='line'>	  d.build_image "/vagrant", args: "-t speriyasamy/apache2"
+</span><span class='line'>	  d.run "apache2", image: "speriyasamy/apache2", args: "-p 80:80"
 </span><span class='line'>	end
+</span><span class='line'>end
 </span></code></pre></td></tr></table></div></figure>
 <p>Use <code>vagarnt up</code> to bring the vm up. It should install docker, build the docker image and use the same image to run the container.</p>
 <p>You can verify this by ssh into the vagrant box, <code>vagarnt ssh</code>, and list the docker container using <code>docker ps</code> and you should see a apache container running.</p>
