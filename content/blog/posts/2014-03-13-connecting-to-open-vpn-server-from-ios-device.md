@@ -5,7 +5,7 @@ date: 2014-03-13 12:00
 image: /assets/images/2014/Mar/openvpn-ios.png
 published: true
 ---
-To connect iOS device to Open VPN server we need
+This post will show how to connect iOS device to Open VPN server. Requisites need are
 
 * Open VPN app
 * Open VPN setting file (client.ovpn)

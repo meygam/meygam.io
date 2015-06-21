@@ -5,11 +5,10 @@ date: 2014-09-11 12:00
 image: /assets/images/2014/Sep/docker-logo.png
 published: true
 ---
-At the end of this blog we will provision a server with vagrant and run apache in a docker container.
-
-<!--more-->
+In this post will show how to provision a server with vagrant and run apache in a docker container.
 
 To understand dockers, visit https://docs.docker.com/
+<!--more-->
 
 You can download the docker file & vagrant file used in this blog from https://github.com/meygam/docker-apache-ubuntu.git
 
