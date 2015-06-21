@@ -1,4 +1,4 @@
-brand: Business Casual
+brand: meygam.io
 sections:
     - name: Home
       link: /
@@ -6,5 +6,5 @@ sections:
       link: /about.html
     - name: Blog
       link: /blog/
-    - name: Contact
-      link: /contact.html
+#    - name: Contact
+#      link: /contact.html
